@@ -1,0 +1,124 @@
+import { createContext, useContext, useEffect, useState } from "react";
+import axios from "axios";
+import * as SecureStore from "expo-secure-store";
+
+interface AuthProps {
+    authState?: {
+        accessToken: string | null;
+        refreshToken: string | null;
+        authenticated: boolean | null;
+    };
+    onRegister?: (email: string, password: string) => Promise<any>;
+    onLogin?: (email: string, password: string) => Promise<any>;
+    onLogout?: () => Promise<any>;
+}
+
+const ACCESS_TOKEN_KEY = "access-jwt";
+const REFRESH_TOKEN_KEY = "refresh-jwt";
+export const API_URL = process.env.EXPO_PUBLIC_API_URL;
+const AuthContext = createContext<AuthProps>({});
+
+export const useAuth = () => {
+    return useContext(AuthContext);
+};
+
+export const AuthProvider = ({ children }: any) => {
+    const [authState, setAuthState] = useState<{
+        accessToken: string | null;
+        refreshToken: string | null;
+        authenticated: boolean | null;
+    }>({
+        accessToken: null,
+        refreshToken: null,
+        authenticated: null,
+    });
+
+    useEffect(() => {
+        const loadTokens = async () => {
+            const accessToken = await SecureStore.getItemAsync(
+                ACCESS_TOKEN_KEY
+            );
+            const refreshToken = await SecureStore.getItemAsync(
+                REFRESH_TOKEN_KEY
+            );
+            if (accessToken && refreshToken) {
+                setAuthState({
+                    accessToken,
+                    refreshToken,
+                    authenticated: true,
+                });
+                axios.defaults.headers.common[
+                    "Authorization"
+                ] = `Bearer ${accessToken}`;
+            }
+        };
+        loadTokens();
+    }, []);
+
+    const register = async (email: string, password: string) => {
+        try {
+            return await axios.post(`${API_URL}/api/register/`, {
+                email,
+                password,
+            });
+        } catch (e) {
+            return { error: true, msg: (e as any).response.data.msg };
+        }
+    };
+
+    const login = async (email: string, password: string) => {
+        try {
+            const result = await axios.post(`${API_URL}/api/token/`, {
+                email,
+                password,
+            });
+
+            await SecureStore.setItemAsync(
+                ACCESS_TOKEN_KEY,
+                result.data.access
+            );
+            await SecureStore.setItemAsync(
+                REFRESH_TOKEN_KEY,
+                result.data.refresh
+            );
+
+            setAuthState({
+                accessToken: result.data.access,
+                refreshToken: result.data.refresh,
+                authenticated: true,
+            });
+
+            axios.defaults.headers.common[
+                "Authorization"
+            ] = `Bearer ${result.data.access}`;
+
+            return result;
+        } catch (e) {
+            return { error: true, msg: (e as any).response.data.msg };
+        }
+    };
+
+    const logout = async () => {
+        await SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY);
+        await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
+
+        axios.defaults.headers.common["Authorization"] = "";
+
+        setAuthState({
+            accessToken: null,
+            refreshToken: null,
+            authenticated: false,
+        });
+    };
+
+    const value = {
+        onRegister: register,
+        onLogin: login,
+        onLogout: logout,
+        authState,
+    };
+
+    return (
+        <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+    );
+};

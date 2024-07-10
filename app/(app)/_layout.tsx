@@ -1,8 +1,11 @@
 import React from "react";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { Link, Tabs } from "expo-router";
+
+import { Link, Redirect, Tabs } from "expo-router";
 import { Pressable } from "react-native";
 
+import { useAuth } from "@/contexts/AuthContext";
+
+import FontAwesome from "@expo/vector-icons/FontAwesome";
 import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 
@@ -14,9 +17,17 @@ function TabBarIcon(props: {
     return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
 }
 
-export default function TabLayout() {
+export default function AppLayout() {
     const colorScheme = useColorScheme();
+    const { authState } = useAuth();
 
+    // Authentication protection (unauthorized users cannot access)
+    if (!authState?.authenticated) {
+        // Redirect to the welcome screen
+        return <Redirect href="/" />;
+    }
+
+    // Define application layout here
     return (
         <Tabs
             screenOptions={{
