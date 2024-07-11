@@ -6,7 +6,7 @@ import { Pressable } from "react-native";
 import { useAuth } from "@/contexts/AuthContext";
 
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import Colors from "@/constants/Colors";
+// import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
@@ -30,9 +30,9 @@ export default function AppLayout() {
     // Define application layout here
     return (
         <Tabs
-            screenOptions={{
-                tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
-            }}
+        // screenOptions={{
+        //     tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
+        // }}
         >
             <Tabs.Screen
                 name="(home)"
@@ -47,11 +47,10 @@ export default function AppLayout() {
                                 {({ pressed }) => (
                                     <FontAwesome
                                         name="info-circle"
-                                        j
                                         size={25}
-                                        color={
-                                            Colors[colorScheme ?? "light"].text
-                                        }
+                                        // color={
+                                        //     Colors[colorScheme ?? "light"].text
+                                        // }
                                         style={{
                                             marginRight: 15,
                                             opacity: pressed ? 0.5 : 1,
@@ -67,9 +66,9 @@ export default function AppLayout() {
                 name="all"
                 options={{
                     title: "Tab Two",
-                    tabBarIcon: ({ color }) => (
-                        <TabBarIcon name="code" color={color} />
-                    ),
+                    // tabBarIcon: ({ color }) => (
+                    //     <TabBarIcon name="code" color={color} />
+                    // ),
                 }}
             />
         </Tabs>

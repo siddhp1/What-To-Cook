@@ -52,10 +52,6 @@ export default function RootLayout() {
         return null;
     }
 
-    return <RootLayoutNav />;
-}
-
-function RootLayoutNav() {
     return (
         <ThemeProvider>
             <SafeAreaProvider>
