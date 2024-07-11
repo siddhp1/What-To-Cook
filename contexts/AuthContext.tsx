@@ -8,7 +8,13 @@ interface AuthProps {
         refreshToken: string | null;
         authenticated: boolean | null;
     };
-    onRegister?: (email: string, password: string) => Promise<any>;
+    onRegister?: (
+        email: string,
+        firstName: string,
+        lastName: string,
+        password: string,
+        confirmPassword: string
+    ) => Promise<any>;
     onLogin?: (email: string, password: string) => Promise<any>;
     onLogout?: () => Promise<any>;
 }
@@ -55,14 +61,39 @@ export const AuthProvider = ({ children }: any) => {
         loadTokens();
     }, []);
 
-    const register = async (email: string, password: string) => {
+    const register = async (
+        email: string,
+        firstName: string,
+        lastName: string,
+        password: string,
+        confirmPassword: string
+    ) => {
         try {
-            return await axios.post(`${API_URL}/api/register/`, {
+            const result = await axios.post(`${API_URL}/api/register/`, {
+                // Change casing for consistency with api
                 email,
+                first_name: firstName,
+                last_name: lastName,
                 password,
+                confirm_password: confirmPassword,
             });
+            return {
+                status: result.status,
+            };
         } catch (e) {
-            return { error: true, msg: (e as any).response.data.msg };
+            if (axios.isAxiosError(e) && e.response) {
+                return {
+                    error: true,
+                    status: e.response.status,
+                    data: e.response.data || "An error occurred.",
+                };
+            } else {
+                return {
+                    error: true,
+                    status: null,
+                    data: "An unexpected error occurred.",
+                };
+            }
         }
     };
 
@@ -92,9 +123,23 @@ export const AuthProvider = ({ children }: any) => {
                 "Authorization"
             ] = `Bearer ${result.data.access}`;
 
-            return result;
+            return {
+                status: result.status,
+            };
         } catch (e) {
-            return { error: true, msg: (e as any).response.data.msg };
+            if (axios.isAxiosError(e) && e.response) {
+                return {
+                    error: true,
+                    status: e.response.status,
+                    detail: e.response.data.detail || "An error occurred.",
+                };
+            } else {
+                return {
+                    error: true,
+                    status: null,
+                    detail: "An unexpected error occurred.",
+                };
+            }
         }
     };
 

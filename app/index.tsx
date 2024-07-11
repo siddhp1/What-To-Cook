@@ -9,6 +9,7 @@ import {
     Text,
     View,
     SafeAreaView,
+    Alert,
 } from "react-native";
 
 // Contexts
@@ -22,16 +23,33 @@ export default function LoginScreen() {
     const { onLogin } = useAuth();
 
     const login = async () => {
-        if (email && password) {
+        // Check that user is entering both username and password
+        if (!email || !password) {
+            Alert.alert("Error", "Please enter credentials.");
+            return;
+        }
+
+        try {
             const result = await onLogin!(email, password);
-            if (result && result.error) {
+
+            if (result.error) {
+                // Error
                 console.log(result);
-                // alert(result.msg);
+                Alert.alert(
+                    `Error (${result.status})`,
+                    result.detail || "Login failed."
+                );
             } else {
+                // Success
+                console.log(result);
                 router.replace("(home)");
             }
-        } else {
-            alert("Enter Credentials");
+        } catch (e) {
+            console.error("Unexpected error:", e);
+            Alert.alert(
+                "Error",
+                "An unexpected error occurred. Please try again."
+            );
         }
     };
 
@@ -50,7 +68,6 @@ export default function LoginScreen() {
             >
                 What to Cook
             </Text>
-
             <TextInput
                 placeholder="Email"
                 placeholderTextColor={theme.c3}
@@ -64,7 +81,6 @@ export default function LoginScreen() {
                     { color: theme.c4, backgroundColor: theme.c2 },
                 ]}
             />
-
             <TextInput
                 placeholder="Password"
                 placeholderTextColor={theme.c3}
