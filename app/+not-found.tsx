@@ -12,7 +12,7 @@ export default function NotFoundScreen() {
             </Text>
             <Pressable
                 style={[styles.button, { backgroundColor: theme.c2 }]}
-                onPress={() => router.replace("/")}
+                onPress={() => router.replace("(home)")}
             >
                 <Text style={[styles.text, { color: theme.c5 }]}>
                     Return to Home

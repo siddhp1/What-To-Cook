@@ -1,16 +1,10 @@
-import { View, Text, StyleSheet, Pressable } from "react-native";
-import { Link } from "expo-router";
+import { View, Text, StyleSheet } from "react-native";
 
-export default function HomeScreen() {
+// Not sure if this screen is necessary
+export default function RecommendationsScreen() {
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Tab One (Home)</Text>
-            <Text style={styles.content}>Tab One (Home)</Text>
-            <Link href="/settings" asChild>
-                <Pressable>
-                    <Text style={styles.title}>Settings</Text>
-                </Pressable>
-            </Link>
+            <Text style={styles.title}>Recommendations Screen</Text>
         </View>
     );
 }
@@ -23,7 +17,7 @@ const styles = StyleSheet.create({
     },
     title: {
         color: "#ffffff",
-        fontFamily: "Inter",
+        fontFamily: "GaMaamli",
         fontSize: 20,
         fontWeight: "bold",
     },

@@ -1,9 +1,10 @@
 import { Text, View, StyleSheet } from "react-native";
 
-export default function SearchScreen() {
+// This screen (or maybe it will get replaced with a modal, will show all of the information for a dish)
+export default function DishScreen() {
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Tab Two (All foods)</Text>
+            <Text style={styles.title}>Individual Dish Screen</Text>
         </View>
     );
 }

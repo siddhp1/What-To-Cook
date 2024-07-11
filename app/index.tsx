@@ -91,14 +91,12 @@ export default function LoginScreen() {
                     { color: theme.c4, backgroundColor: theme.c2 },
                 ]}
             />
-
             <Pressable
                 onPress={login}
                 style={[styles.button, { backgroundColor: theme.c2 }]}
             >
                 <Text style={[styles.text, { color: theme.c5 }]}>Login</Text>
             </Pressable>
-
             <View style={styles.link}>
                 <Text style={[styles.text, { color: theme.c3 }]}>
                     Don't have an account?
