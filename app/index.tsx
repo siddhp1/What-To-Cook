@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { router, Link } from "expo-router";
+import { router } from "expo-router";
 
 // Components
 import {
@@ -7,6 +7,7 @@ import {
     TextInput,
     Pressable,
     Text,
+    View,
     SafeAreaView,
 } from "react-native";
 
@@ -51,56 +52,86 @@ export default function LoginScreen() {
             </Text>
 
             <TextInput
-                placeholder="email"
+                placeholder="Email"
+                placeholderTextColor={theme.c3}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoComplete="email"
                 autoCorrect={false}
                 onChangeText={(text: string) => setEmail(text)}
+                style={[
+                    styles.input,
+                    { color: theme.c4, backgroundColor: theme.c2 },
+                ]}
             />
+
             <TextInput
-                placeholder="password"
+                placeholder="Password"
+                placeholderTextColor={theme.c3}
                 secureTextEntry={true}
                 onChangeText={(text: string) => setPassword(text)}
+                style={[
+                    styles.input,
+                    { color: theme.c4, backgroundColor: theme.c2 },
+                ]}
             />
-            <Pressable onPress={login}>
-                <Text
-                    style={[
-                        styles.button,
-                        { color: theme.c5, backgroundColor: theme.c2 },
-                    ]}
-                >
-                    Login
-                </Text>
+
+            <Pressable
+                onPress={login}
+                style={[styles.button, { backgroundColor: theme.c2 }]}
+            >
+                <Text style={[styles.text, { color: theme.c5 }]}>Login</Text>
             </Pressable>
 
-            <Link href="/register" asChild>
-                <Pressable>
-                    <Text>Dont have an accoutn Create an Account</Text>
+            <View style={styles.link}>
+                <Text style={[styles.text, { color: theme.c3 }]}>
+                    Don't have an account?
+                </Text>
+                <Pressable onPress={() => router.replace("/register")}>
+                    <Text style={[styles.text, { color: theme.c5 }]}>
+                        Sign Up
+                    </Text>
                 </Pressable>
-            </Link>
+            </View>
         </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: "#fff",
         flex: 1,
-        width: "100%",
         alignItems: "center",
-        alignSelf: "center",
         justifyContent: "center",
     },
     title: {
-        fontFamily: "Adelia",
         lineHeight: "100%",
+        fontFamily: "Adelia",
         fontSize: 40,
     },
+    input: {
+        marginTop: "4%",
+        minWidth: "80%",
+        paddingVertical: "3%",
+        paddingHorizontal: "3%",
+        borderRadius: 10,
+        fontFamily: "LouisGeorgeCafe",
+        fontSize: 20,
+    },
     button: {
-        fontFamily: "LouisGeorgeCafeBold",
-        fontSize: 40,
-        minWidth: "50%",
+        marginTop: "4%",
+        minWidth: "80%",
+        paddingVertical: "3%",
+        paddingHorizontal: "8%",
+        borderRadius: 10,
+    },
+    text: {
         textAlign: "center",
+        fontFamily: "LouisGeorgeCafeBold",
+        fontSize: 20,
+    },
+    link: {
+        marginTop: "4%",
+        flexDirection: "row",
+        gap: 8,
     },
 });
