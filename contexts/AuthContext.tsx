@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 import * as SecureStore from "expo-secure-store";
 
 interface AuthProps {
@@ -39,6 +40,44 @@ export const AuthProvider = ({ children }: any) => {
         authenticated: null,
     });
 
+    // Validate token
+    const validateToken = (token: string): boolean => {
+        try {
+            const decoded: any = jwtDecode(token);
+            const currentTime = Date.now() / 1000; // Convert to seconds
+            return decoded.exp > currentTime;
+        } catch (error) {
+            return false;
+        }
+    };
+
+    // Refresh the token
+    const getNewToken = async (refreshToken: string) => {
+        try {
+            const response = await axios.post(`${API_URL}/api/token/refresh/`, {
+                refresh: refreshToken,
+            });
+
+            const newAccessToken = response.data.access;
+            await SecureStore.setItemAsync(ACCESS_TOKEN_KEY, newAccessToken);
+            axios.defaults.headers.common[
+                "Authorization"
+            ] = `Bearer ${newAccessToken}`;
+
+            setAuthState((prevState) => ({
+                ...prevState,
+                accessToken: newAccessToken,
+                authenticated: true,
+            }));
+
+            return true;
+        } catch (error) {
+            console.error("Failed to refresh token", error);
+            await logout();
+            return false;
+        }
+    };
+
     useEffect(() => {
         const loadTokens = async () => {
             const accessToken = await SecureStore.getItemAsync(
@@ -48,14 +87,20 @@ export const AuthProvider = ({ children }: any) => {
                 REFRESH_TOKEN_KEY
             );
             if (accessToken && refreshToken) {
-                setAuthState({
-                    accessToken,
-                    refreshToken,
-                    authenticated: true,
-                });
-                axios.defaults.headers.common[
-                    "Authorization"
-                ] = `Bearer ${accessToken}`;
+                const isTokenValid = validateToken(accessToken);
+                if (isTokenValid) {
+                    setAuthState({
+                        accessToken,
+                        refreshToken,
+                        authenticated: true,
+                    });
+                    axios.defaults.headers.common[
+                        "Authorization"
+                    ] = `Bearer ${accessToken}`;
+                } else {
+                    // Try to refresh the token if access token is expired
+                    await getNewToken(refreshToken);
+                }
             }
         };
         loadTokens();
@@ -69,7 +114,7 @@ export const AuthProvider = ({ children }: any) => {
         confirmPassword: string
     ) => {
         try {
-            const result = await axios.post(`${API_URL}/api/register/`, {
+            const result = await axios.post(`${API_URL}/api/users/register/`, {
                 // Change casing for consistency with api
                 email,
                 first_name: firstName,
