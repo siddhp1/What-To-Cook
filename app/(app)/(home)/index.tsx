@@ -1,25 +1,56 @@
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import { View, Text, StyleSheet, Pressable, SafeAreaView } from "react-native";
 import { Link } from "expo-router";
 
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export default function HomeScreen() {
     const { onLogout } = useAuth();
+    const { theme } = useTheme();
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Tab One (Home)</Text>
-            <Text style={styles.content}>Tab One (Home)</Text>
-            <Link href="/settings" asChild>
+        <SafeAreaView style={[styles.container, { backgroundColor: theme.c1 }]}>
+            {/* Add section */}
+            <Text
+                style={[
+                    styles.heading,
+                    {
+                        color: theme.c4,
+                    },
+                ]}
+            >
+                Made Something Today?
+            </Text>
+            <Link href="/add" asChild>
                 <Pressable>
-                    <Text style={styles.title}>Settings</Text>
+                    <Text style={styles.heading}>Link to Add</Text>
                 </Pressable>
             </Link>
-            {/* Potentially relocate to the header or somewhere else (settings) */}
-            <Pressable onPress={onLogout}>
-                <Text style={styles.title}>LOGOUT</Text>
-            </Pressable>
-        </View>
+
+            {/* Quick and easy section */}
+            <Text
+                style={[
+                    styles.heading,
+                    {
+                        color: theme.c4,
+                    },
+                ]}
+            >
+                Need Something Quick?
+            </Text>
+
+            {/* Haven't made in a while section */}
+            <Text
+                style={[
+                    styles.heading,
+                    {
+                        color: theme.c4,
+                    },
+                ]}
+            >
+                Want Something Different?
+            </Text>
+        </SafeAreaView>
     );
 }
 
@@ -29,20 +60,8 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
     },
-    title: {
-        color: "#ffffff",
-        fontFamily: "Inter",
-        fontSize: 20,
-        fontWeight: "bold",
-    },
-    content: {
-        color: "#ffffff",
-        fontSize: 20,
-        fontWeight: "bold",
-    },
-    separator: {
-        marginVertical: 30,
-        height: 1,
-        width: "80%",
+    heading: {
+        fontFamily: "LouisGeorgeCafe",
+        fontSize: 24,
     },
 });
