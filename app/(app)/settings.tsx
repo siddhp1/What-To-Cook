@@ -1,8 +1,10 @@
-import { Text, View, StyleSheet, SafeAreaView } from "react-native";
+import { SafeAreaView, Text, Pressable, StyleSheet } from "react-native";
 
+import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 
-export default function SearchScreen() {
+export default function SettingsScreen() {
+    const { onLogout } = useAuth();
     const { theme } = useTheme();
 
     return (
@@ -15,8 +17,14 @@ export default function SearchScreen() {
                     },
                 ]}
             >
-                Here's Everything You Have Ever Made.
+                Settings
             </Text>
+
+            {/* Add more settings here after */}
+
+            <Pressable onPress={onLogout}>
+                <Text style={styles.heading}>LOGOUT</Text>
+            </Pressable>
         </SafeAreaView>
     );
 }
