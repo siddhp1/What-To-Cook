@@ -16,13 +16,22 @@
             "supportsTablet": true,
             "config": {
                 "usesNonExemptEncryption": false
+            },
+            "infoPlist": {
+                "NSCameraUsageDescription": "This app needs access to your camera to take photos.",
+                "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to choose photos."
             }
         },
         "android": {
             "adaptiveIcon": {
                 "foregroundImage": "./assets/images/adaptive-icon.png",
                 "backgroundColor": "#ffffff"
-            }
+            },
+            "permissions": [
+                "CAMERA",
+                "READ_EXTERNAL_STORAGE",
+                "WRITE_EXTERNAL_STORAGE"
+            ]
         },
         "web": {
             "bundler": "metro",
@@ -36,6 +45,13 @@
                 "expo-secure-store",
                 {
                     "faceIDPermission": "Allow $(PRODUCT_NAME) to access your Face ID biometric data."
+                }
+            ],
+            [
+                "expo-image-picker",
+                {
+                    "photosPermission": "Allow $(PRODUCT_NAME) to access your photos",
+                    "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera"
                 }
             ]
         ],
