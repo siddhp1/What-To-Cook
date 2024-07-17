@@ -20,6 +20,7 @@ import { API_URL } from "@/contexts/AuthContext";
 // Icons
 import { StarIcon } from "react-native-star-rating-widget";
 import { FontAwesome, FontAwesome6 } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 type Dish = {
     id: number;
@@ -37,18 +38,62 @@ export default function SearchScreen() {
     const [loading, setLoading] = useState(false);
     const [hasNextPage, setHasNextPage] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
-    // Add ordering
 
-    const handleSearch = () => {
+    const [sortOrder, setSortOrder] = useState<number>(0);
+    const [ordering, setOrdering] = useState<string>("-date_last_made");
+    const [icon, setIcon] = useState<string>("sort-calendar-descending");
+
+    // Listen for changes in the sortOrder number, change corresponding icon and request param
+    useEffect(() => {
+        switch (sortOrder) {
+            case 0:
+                setOrdering("-date_last_made");
+                setIcon("sort-calendar-descending");
+                break;
+            case 1:
+                setOrdering("date_last_made");
+                setIcon("sort-calendar-ascending");
+                break;
+            case 2:
+                setOrdering("cuisine");
+                setIcon("sort-alphabetical-ascending-variant");
+                break;
+            case 3:
+                setOrdering("-cuisine");
+                setIcon("sort-alphabetical-descending-variant");
+                break;
+            case 4:
+                setOrdering("name");
+                setIcon("sort-alphabetical-ascending");
+                break;
+            case 5:
+                setOrdering("-name");
+                setIcon("sort-alphabetical-descending");
+                break;
+            default:
+                setOrdering("-date_last_made");
+                setIcon("sort-calendar-descending");
+                break;
+        }
         setPage(1);
-        getDishes();
-    };
+    }, [sortOrder]);
 
+    // Listen to change in ordering or page
+    useEffect(() => {
+        getDishes();
+    }, [page, ordering]);
+
+    // Api request
     const getDishes = async () => {
         setLoading(true);
+
         try {
             const result = await axios.get(`${API_URL}/api/dishes/`, {
-                params: { page, search: searchQuery },
+                params: {
+                    page,
+                    search: searchQuery,
+                    ordering: ordering,
+                },
             });
 
             console.log(result.status);
@@ -85,11 +130,7 @@ export default function SearchScreen() {
         }
     };
 
-    // Get dishes automatically
-    useEffect(() => {
-        getDishes();
-    }, [page]);
-
+    // Theme
     const { theme } = useTheme();
 
     return (
@@ -107,10 +148,24 @@ export default function SearchScreen() {
                     ]}
                 />
                 <Pressable
-                    onPress={handleSearch}
+                    onPress={() => (page == 1 ? getDishes() : setPage(1))}
                     style={[styles.searchButton, { backgroundColor: theme.c2 }]}
                 >
                     <FontAwesome name="search" size={24} color={theme.c5} />
+                </Pressable>
+                <Pressable
+                    onPress={() =>
+                        sortOrder < 5
+                            ? setSortOrder(sortOrder + 1)
+                            : setSortOrder(0)
+                    }
+                    style={[styles.searchButton, { backgroundColor: theme.c2 }]}
+                >
+                    <MaterialCommunityIcons
+                        name={icon as any}
+                        size={24}
+                        color={theme.c5}
+                    />
                 </Pressable>
             </View>
 
@@ -242,7 +297,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,
     },
     fullInput: {
-        minWidth: "65%",
+        minWidth: "52%",
         paddingVertical: "3%",
         paddingHorizontal: "3%",
         borderRadius: 10,
