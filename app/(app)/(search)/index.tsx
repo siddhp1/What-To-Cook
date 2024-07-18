@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 import {
     Text,
@@ -22,6 +22,8 @@ import { StarIcon } from "react-native-star-rating-widget";
 import { FontAwesome, FontAwesome6 } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
+import { router, useFocusEffect } from "expo-router";
+
 type Dish = {
     id: number;
     name: string;
@@ -42,6 +44,21 @@ export default function SearchScreen() {
     const [sortOrder, setSortOrder] = useState<number>(0);
     const [ordering, setOrdering] = useState<string>("-date_last_made");
     const [icon, setIcon] = useState<string>("sort-calendar-descending");
+
+    // Refresh the page upon coming back, should be fine
+    const refreshPage = useCallback(() => {
+        setPage(1);
+        getDishes();
+    }, []);
+
+    useFocusEffect(
+        useCallback(() => {
+            refreshPage();
+            return () => {
+                // Optional cleanup if needed
+            };
+        }, [refreshPage])
+    );
 
     // Listen for changes in the sortOrder number, change corresponding icon and request param
     useEffect(() => {
@@ -178,7 +195,7 @@ export default function SearchScreen() {
                                   { backgroundColor: theme.c2 },
                               ]}
                               key={index}
-                              // Link to other page, pass in the data
+                              onPress={() => router.push(`/dish/${dish.id}`)}
                           >
                               <Image
                                   style={styles.thumbnail}
