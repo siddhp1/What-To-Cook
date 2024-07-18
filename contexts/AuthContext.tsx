@@ -5,6 +5,7 @@ import * as SecureStore from "expo-secure-store";
 
 interface AuthProps {
     authState?: {
+        userId: string | null;
         accessToken: string | null;
         refreshToken: string | null;
         authenticated: boolean | null;
@@ -18,8 +19,10 @@ interface AuthProps {
     ) => Promise<any>;
     onLogin?: (email: string, password: string) => Promise<any>;
     onLogout?: () => Promise<any>;
+    onDelete?: () => Promise<any>; // here
 }
 
+const USER_ID_KEY = "user-id";
 const ACCESS_TOKEN_KEY = "access-jwt";
 const REFRESH_TOKEN_KEY = "refresh-jwt";
 export const API_URL = process.env.EXPO_PUBLIC_API_URL;
@@ -31,10 +34,12 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }: any) => {
     const [authState, setAuthState] = useState<{
+        userId: string | null; // here
         accessToken: string | null;
         refreshToken: string | null;
         authenticated: boolean | null;
     }>({
+        userId: null, // here
         accessToken: null,
         refreshToken: null,
         authenticated: null,
@@ -86,10 +91,14 @@ export const AuthProvider = ({ children }: any) => {
             const refreshToken = await SecureStore.getItemAsync(
                 REFRESH_TOKEN_KEY
             );
+            // here
+            const userId = await SecureStore.getItemAsync(USER_ID_KEY);
             if (accessToken && refreshToken) {
                 const isTokenValid = validateToken(accessToken);
                 if (isTokenValid) {
+                    // HERE
                     setAuthState({
+                        userId,
                         accessToken,
                         refreshToken,
                         authenticated: true,
@@ -157,8 +166,15 @@ export const AuthProvider = ({ children }: any) => {
                 REFRESH_TOKEN_KEY,
                 result.data.refresh
             );
+            // here
+            await SecureStore.setItemAsync(
+                USER_ID_KEY,
+                result.data.id.toString()
+            );
 
+            // here
             setAuthState({
+                userId: result.data.id.toString(),
                 accessToken: result.data.access,
                 refreshToken: result.data.refresh,
                 authenticated: true,
@@ -188,13 +204,44 @@ export const AuthProvider = ({ children }: any) => {
         }
     };
 
+    const deleteAccount = async () => {
+        // Call the API to delete the account
+        try {
+            const result = await axios.delete(
+                `${API_URL}/api/users/user/${authState.userId}/`
+            );
+            logout(); // Logout after deleting
+            return {
+                status: result.status,
+            };
+        } catch (e) {
+            if (axios.isAxiosError(e) && e.response) {
+                return {
+                    error: true,
+                    status: e.response.status,
+                    detail: e.response.data.detail || "An error occurred.",
+                };
+            } else {
+                return {
+                    error: true,
+                    status: null,
+                    detail: "An unexpected error occurred.",
+                };
+            }
+        }
+    };
+
     const logout = async () => {
+        // herer
+        await SecureStore.deleteItemAsync(USER_ID_KEY);
         await SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY);
         await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
 
         axios.defaults.headers.common["Authorization"] = "";
 
+        // here
         setAuthState({
+            userId: null,
             accessToken: null,
             refreshToken: null,
             authenticated: false,
@@ -205,6 +252,7 @@ export const AuthProvider = ({ children }: any) => {
         onRegister: register,
         onLogin: login,
         onLogout: logout,
+        onDelete: deleteAccount,
         authState,
     };
 
