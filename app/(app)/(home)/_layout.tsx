@@ -1,22 +1,21 @@
 import { useTheme } from "@/contexts/ThemeContext";
-import { Stack, useNavigation } from "expo-router";
+import { Stack, router } from "expo-router";
 import { Pressable, Text, StyleSheet } from "react-native";
 
 export default function HomeLayout() {
     const { theme } = useTheme();
-    const navigation = useNavigation();
 
     return (
         <Stack>
             <Stack.Screen name="index" options={{ headerShown: false }} />
             <Stack.Screen
-                name="add"
+                name="add-existing"
                 options={{
                     headerShown: true,
                     headerStyle: {
                         backgroundColor: theme.c1,
                     },
-                    title: "Add Dish",
+                    title: "Add Existing Dish",
                     headerTitleStyle: [
                         styles.title,
                         {
@@ -24,7 +23,7 @@ export default function HomeLayout() {
                         },
                     ],
                     headerLeft: () => (
-                        <Pressable onPress={() => navigation.popToTop()}>
+                        <Pressable onPress={() => router.back()}>
                             <Text
                                 style={[
                                     styles.link,
@@ -33,13 +32,45 @@ export default function HomeLayout() {
                                     },
                                 ]}
                             >
+                                {/* Update this to a proper icon or make custom component */}
                                 &lt; Back
                             </Text>
                         </Pressable>
                     ),
                 }}
             />
-            {/* Add other screens, and make the header a separate component after */}
+            <Stack.Screen name="[id]" />
+            <Stack.Screen
+                name="add"
+                options={{
+                    headerShown: true,
+                    headerStyle: {
+                        backgroundColor: theme.c1,
+                    },
+                    title: "Add New Dish",
+                    headerTitleStyle: [
+                        styles.title,
+                        {
+                            color: theme.c4,
+                        },
+                    ],
+                    headerLeft: () => (
+                        <Pressable onPress={() => router.back()}>
+                            <Text
+                                style={[
+                                    styles.link,
+                                    {
+                                        color: theme.c5,
+                                    },
+                                ]}
+                            >
+                                {/* Update this to a proper icon or make custom component */}
+                                &lt; Back
+                            </Text>
+                        </Pressable>
+                    ),
+                }}
+            />
         </Stack>
     );
 }
