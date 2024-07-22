@@ -105,7 +105,7 @@ export default function SearchScreen() {
         setLoading(true);
 
         try {
-            const result = await axios.get(`${API_URL}/api/dishes/`, {
+            const result = await axios.get(`${API_URL}/api/dishes/dishes/`, {
                 params: {
                     page,
                     search: searchQuery,
@@ -185,7 +185,6 @@ export default function SearchScreen() {
                     />
                 </Pressable>
             </View>
-
             <ScrollView contentContainerStyle={styles.scrollViewContainer}>
                 {dishes
                     ? dishes.map((dish: Dish, index: number) => (
