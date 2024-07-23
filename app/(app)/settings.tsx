@@ -1,15 +1,16 @@
-// Components
-import { Alert, Pressable, SafeAreaView, StyleSheet, Text } from "react-native";
+// Components and styles
+import { Alert } from "react-native";
+import { Pressable, SansSerifText, SafeAreaView } from "@/components/Styled";
+import { spacing } from "@/constants/Spacing";
 
 // Contexts
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 
 export default function SettingsScreen() {
-    const { onLogout, onDelete } = useAuth();
     const { theme } = useTheme();
+    const { onLogout, onDelete } = useAuth();
 
-    // Edit prompt message and styles after
     const onDeletePressed = () => {
         Alert.alert(
             "Are You Sure?",
@@ -29,54 +30,18 @@ export default function SettingsScreen() {
     };
 
     return (
-        <SafeAreaView style={[styles.container, { backgroundColor: theme.c1 }]}>
-            <Text
-                style={[
-                    styles.heading,
-                    {
-                        color: theme.c4,
-                    },
-                ]}
-            >
-                Settings
-            </Text>
-            <Pressable
-                onPress={onLogout}
-                style={[styles.button, { backgroundColor: theme.c2 }]}
-            >
-                <Text style={[styles.text, { color: theme.c5 }]}>Log Out</Text>
+        <SafeAreaView>
+            <SansSerifText size="h1">Settings</SansSerifText>
+            <Pressable onPress={onLogout} style={spacing.mt4}>
+                <SansSerifText size="h2" style={{ color: theme.c5 }}>
+                    Log Out
+                </SansSerifText>
             </Pressable>
-            <Pressable
-                onPress={onDeletePressed}
-                style={[styles.button, { backgroundColor: theme.c2 }]}
-            >
-                <Text style={[styles.text, { color: theme.c5 }]}>
+            <Pressable onPress={onDeletePressed} style={spacing.mt4}>
+                <SansSerifText size="h2" style={{ color: theme.c5 }}>
                     Delete Account
-                </Text>
+                </SansSerifText>
             </Pressable>
         </SafeAreaView>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        alignItems: "center",
-    },
-    heading: {
-        fontFamily: "LouisGeorgeCafe",
-        fontSize: 24,
-    },
-    text: {
-        textAlign: "center",
-        fontFamily: "LouisGeorgeCafe",
-        fontSize: 20,
-    },
-    button: {
-        marginTop: "4%",
-        minWidth: "80%",
-        paddingVertical: "3%",
-        paddingHorizontal: "8%",
-        borderRadius: 10,
-    },
-});

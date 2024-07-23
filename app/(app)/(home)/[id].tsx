@@ -1,33 +1,34 @@
-// Core
 import { useEffect, useState, useLayoutEffect, useRef } from "react";
-
-// Api
 import axios from "axios";
-
-// Router
 import { useNavigation, useLocalSearchParams } from "expo-router";
 
-// Components
-import { Image } from "expo-image";
-import * as ImagePicker from "expo-image-picker";
+// Components and styles
 import {
     Alert,
     Dimensions,
+    StyleSheet,
+    Pressable as DefaultPressable,
+} from "react-native";
+import StarRating from "react-native-star-rating-widget";
+import {
+    Image,
     Pressable,
+    SerifText,
+    SansSerifText,
     SafeAreaView,
     ScrollView,
-    StyleSheet,
-    Text,
     TextInput,
     View,
-} from "react-native";
-import StarRating, { StarIcon } from "react-native-star-rating-widget";
+} from "@/components/Styled";
+import { pickOrTake } from "@/components/ImagePicker";
+import { spacing } from "@/constants/Spacing";
 
 // Contexts
-import { useTheme } from "@/contexts/ThemeContext";
 import { API_URL } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 
 // Icons
+import { StarIcon } from "react-native-star-rating-widget";
 import { FontAwesome, FontAwesome6 } from "@expo/vector-icons";
 
 export default function DishScreen() {
@@ -48,103 +49,32 @@ export default function DishScreen() {
     const [viewMode, setViewMode] = useState<boolean>(true);
     const isFirstRender = useRef(true);
 
-    // Theme
     const { theme } = useTheme();
 
-    // Header
+    // Customize header for this page
     const navigation = useNavigation();
     useLayoutEffect(() => {
         navigation.setOptions({
-            headerShown: true,
-            headerStyle: {
-                backgroundColor: theme.c1,
-            },
-            title: "Dish Information",
-            headerTitleStyle: {
-                ...styles.title,
-                color: theme.c4,
-            },
-            headerLeft: () => (
-                <Pressable onPress={() => navigation.goBack()}>
-                    <Text style={{ ...styles.link, color: theme.c5 }}>
-                        {/* Replace with an actual icon */}
-                        &lt; Back
-                    </Text>
-                </Pressable>
-            ),
             headerRight: () => (
-                // Call a function for this
-                <Pressable onPress={switchViewMode}>
+                <DefaultPressable
+                    onPress={switchViewMode}
+                    style={styles.switchViewModeButton}
+                >
                     {viewMode ? (
-                        <FontAwesome6 name="edit" size={24} color={theme.c5} />
+                        <FontAwesome6 name="edit" size={22} color={theme.c5} />
                     ) : (
-                        <FontAwesome name="save" size={24} color={theme.c5} />
+                        <FontAwesome name="save" size={22} color={theme.c5} />
                     )}
-                </Pressable>
+                </DefaultPressable>
             ),
         });
-    }, [navigation, theme, viewMode]);
+    }, [navigation, viewMode]);
 
-    // Ask the user if they want to take a photo or select from camera roll
-    const pickOrTake = async () => {
-        Alert.alert(
-            "Upload Photo",
-            "Choose an option",
-            [
-                {
-                    text: "Take Photo",
-                    onPress: () => takePhoto(),
-                },
-                {
-                    text: "Choose from Library",
-                    onPress: () => pickImage(),
-                },
-                {
-                    text: "Cancel",
-                    style: "cancel",
-                },
-            ],
-            { cancelable: true }
-        );
-    };
-
-    const pickImage = async () => {
-        const permission =
-            await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-        if (permission.granted) {
-            let result = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                aspect: [1, 1],
-                quality: 1,
-                selectionLimit: 1,
-                allowsEditing: true,
-            });
-
-            if (!result.canceled) {
-                setImage(result.assets[0].uri);
-            }
+    const imagePickerHandler = async () => {
+        const uri = await pickOrTake();
+        if (uri) {
+            setImage(uri);
         }
-        return;
-    };
-
-    const takePhoto = async () => {
-        const permission = await ImagePicker.requestCameraPermissionsAsync();
-
-        if (permission.granted) {
-            let result = await ImagePicker.launchCameraAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                aspect: [1, 1],
-                quality: 1,
-                selectionLimit: 1,
-                allowsEditing: true,
-            });
-
-            if (!result.canceled) {
-                setImage(result.assets[0].uri);
-            }
-        }
-        return;
     };
 
     // Switch modes and stuff
@@ -303,200 +233,167 @@ export default function DishScreen() {
     };
 
     return (
-        <SafeAreaView style={[styles.container, { backgroundColor: theme.c1 }]}>
-            <ScrollView contentContainerStyle={styles.scrollViewContainer}>
+        <SafeAreaView>
+            <ScrollView>
                 {viewMode ? (
-                    <View>
-                        <Text style={[styles.name, { color: theme.c4 }]}>
-                            {name}
-                        </Text>
-                    </View>
-                ) : (
                     <>
-                        <Text
+                        <View>
+                            <SerifText size="h2">{name}</SerifText>
+                        </View>
+                        {image && (
+                            <Image
+                                style={styles.image}
+                                source={{ uri: image }}
+                            />
+                        )}
+                        <View style={[styles.attributeContainer, spacing.mt4]}>
+                            <SansSerifText size="h3">
+                                Cuisine: {cuisine}
+                            </SansSerifText>
+                        </View>
+                        <View style={[styles.attributeContainer, spacing.mt4]}>
+                            <SansSerifText size="h3">
+                                Last Made: {dateLastMade}
+                            </SansSerifText>
+                        </View>
+                        <View style={[styles.attributeContainer, spacing.mt4]}>
+                            <SansSerifText
+                                size="h3"
+                                style={styles.attributeText}
+                            >
+                                Rating: {rating}
+                            </SansSerifText>
+                            <StarIcon
+                                index={0}
+                                type="full"
+                                size={28}
+                                color={theme.c6}
+                            />
+                        </View>
+                        <View
                             style={[
-                                styles.text,
-                                { color: theme.c4, marginTop: "2%" },
+                                styles.attributeContainer,
+                                spacing.mt4,
+                                spacing.mb4,
                             ]}
                         >
+                            <SansSerifText
+                                size="h3"
+                                style={styles.attributeText}
+                            >
+                                Time to Make: {timeToMake}
+                            </SansSerifText>
+                            <FontAwesome6
+                                name="clock"
+                                size={24}
+                                color={theme.c4}
+                            />
+                        </View>
+                    </>
+                ) : (
+                    <>
+                        <SansSerifText
+                            size="h3"
+                            style={[spacing.mt2, spacing.mb1]}
+                        >
                             Name
-                        </Text>
+                        </SansSerifText>
                         <TextInput
                             value={name}
                             autoCapitalize="words"
                             autoCorrect={false}
                             onChangeText={(text: string) => setName(text)}
-                            style={[
-                                styles.fullInput,
-                                { color: theme.c4, backgroundColor: theme.c2 },
-                            ]}
                         />
-                    </>
-                )}
-
-                {image ? (
-                    viewMode ? (
-                        <Image
-                            style={styles.image}
-                            source={{ uri: image }}
-                            contentFit="contain"
-                        />
-                    ) : (
-                        <Pressable
-                            style={{ marginTop: "4%" }}
-                            onPress={pickOrTake}
-                        >
-                            <View
-                                style={{
-                                    position: "relative",
-                                    justifyContent: "center",
-                                    alignItems: "center",
-                                }}
+                        {image && (
+                            <Pressable
+                                style={[styles.imageButton, spacing.mt4]}
+                                onPress={imagePickerHandler}
                             >
-                                <Image
-                                    style={styles.image}
-                                    source={{ uri: image }}
-                                    contentFit="contain"
-                                />
-                                <View
-                                    style={[
-                                        styles.image,
-                                        {
-                                            position: "absolute",
-                                            backgroundColor:
-                                                "rgba(255, 255, 255, 0.5)", // Adjust color and opacity as needed
-                                        },
-                                    ]}
-                                />
-                                <FontAwesome6
-                                    name="edit"
-                                    size={48}
-                                    color={theme.c4}
-                                    style={{ position: "absolute" }}
-                                />
-                            </View>
-                        </Pressable>
-                    )
-                ) : null}
-
-                {viewMode ? (
-                    <View style={styles.attributeContainer}>
-                        <Text style={[styles.text, { color: theme.c4 }]}>
-                            Cuisine: {cuisine}
-                        </Text>
-                    </View>
-                ) : (
-                    <>
-                        <Text
-                            style={[
-                                styles.text,
-                                { color: theme.c4, marginTop: "2%" },
-                            ]}
+                                <View style={styles.imageContainer}>
+                                    <Image
+                                        style={styles.image}
+                                        source={{ uri: image }}
+                                    />
+                                    <View
+                                        style={[
+                                            styles.imageOverlay,
+                                            styles.image,
+                                        ]}
+                                    />
+                                    <FontAwesome6
+                                        name="edit"
+                                        size={48}
+                                        color={theme.c5}
+                                        style={styles.imageEditIcon}
+                                    />
+                                </View>
+                            </Pressable>
+                        )}
+                        <SansSerifText
+                            size="h3"
+                            style={[spacing.mt2, spacing.mb1]}
                         >
                             Cuisine
-                        </Text>
+                        </SansSerifText>
                         <TextInput
                             value={cuisine}
                             autoCapitalize="words"
                             autoCorrect={false}
                             onChangeText={(text: string) => setCuisine(text)}
-                            style={[
-                                styles.fullInput,
-                                { color: theme.c4, backgroundColor: theme.c2 },
-                            ]}
                         />
+                        <View
+                            style={[
+                                styles.ratingContainer,
+                                spacing.mt4,
+                                { backgroundColor: theme.c2 },
+                            ]}
+                        >
+                            <SansSerifText size="h3">Rating</SansSerifText>
+                            <StarRating
+                                rating={rating}
+                                onChange={setRating}
+                                color={theme.c6}
+                            />
+                        </View>
+                        <View
+                            style={[
+                                styles.ratingContainer,
+                                spacing.mt4,
+                                { backgroundColor: theme.c2 },
+                            ]}
+                        >
+                            <SansSerifText size="h3">
+                                Time to Make
+                            </SansSerifText>
+                            <StarRating
+                                rating={timeToMake}
+                                onChange={setTimeToMake}
+                                enableHalfStar={false}
+                                color={theme.c4}
+                                emptyColor={theme.c3}
+                                StarIconComponent={({ color }) => (
+                                    <FontAwesome6
+                                        name="clock"
+                                        size={28}
+                                        color={color}
+                                    />
+                                )}
+                                style={styles.starRatingStyle}
+                                starStyle={styles.starStyle}
+                            />
+                        </View>
+                        <Pressable
+                            onPress={deleteDish}
+                            style={[spacing.mt4, spacing.mb4]}
+                        >
+                            <SansSerifText
+                                size="h3"
+                                style={{ color: theme.c5 }}
+                            >
+                                Delete Dish
+                            </SansSerifText>
+                        </Pressable>
                     </>
-                )}
-
-                {viewMode ? (
-                    <View style={styles.attributeContainer}>
-                        <Text style={[styles.text, { color: theme.c4 }]}>
-                            Last Made: {dateLastMade}
-                        </Text>
-                    </View>
-                ) : null}
-
-                {viewMode ? (
-                    <View style={styles.attributeContainer}>
-                        <Text
-                            style={[
-                                styles.text,
-                                { color: theme.c4, marginRight: 2 },
-                            ]}
-                        >
-                            Rating: {rating}
-                        </Text>
-                        <StarIcon
-                            index={0}
-                            type="full"
-                            size={28}
-                            color="#fdd835"
-                        />
-                    </View>
-                ) : (
-                    <View
-                        style={[
-                            styles.ratingContainer,
-                            { backgroundColor: theme.c2 },
-                        ]}
-                    >
-                        <Text style={[styles.text, { color: theme.c4 }]}>
-                            Rating
-                        </Text>
-                        <StarRating rating={rating} onChange={setRating} />
-                    </View>
-                )}
-
-                {viewMode ? (
-                    <View style={styles.attributeContainer}>
-                        <Text
-                            style={[
-                                styles.text,
-                                { color: theme.c4, marginRight: 4 },
-                            ]}
-                        >
-                            Time to Make: {timeToMake}
-                        </Text>
-                        <FontAwesome6 name="clock" size={24} color={theme.c4} />
-                    </View>
-                ) : (
-                    <View
-                        style={[
-                            styles.ratingContainer,
-                            { backgroundColor: theme.c2 },
-                        ]}
-                    >
-                        <Text style={[styles.text, { color: theme.c4 }]}>
-                            Time to Make
-                        </Text>
-                        <StarRating
-                            rating={timeToMake}
-                            onChange={setTimeToMake}
-                            enableHalfStar={false}
-                            color={theme.c4}
-                            emptyColor={theme.c3}
-                            StarIconComponent={({ color }) => (
-                                <FontAwesome6
-                                    name="clock"
-                                    size={28}
-                                    color={color}
-                                />
-                            )}
-                            style={{ marginTop: 5, marginBottom: 2 }}
-                            starStyle={{ marginHorizontal: 7 }}
-                        />
-                    </View>
-                )}
-
-                {viewMode ? null : (
-                    <Pressable
-                        onPress={deleteDish}
-                        style={[styles.button, { backgroundColor: theme.c2 }]}
-                    >
-                        <Text style={[styles.text, { color: theme.c5 }]}>
-                            Delete Dish
-                        </Text>
-                    </Pressable>
                 )}
             </ScrollView>
         </SafeAreaView>
@@ -507,76 +404,53 @@ const screenWidth = Dimensions.get("window").width;
 const imageSize = screenWidth * 0.8;
 
 const styles = StyleSheet.create({
-    // Containers
-    container: {
-        flex: 1,
-    },
-    scrollViewContainer: {
-        alignItems: "center",
-    },
-
-    // Header
-    title: {
-        fontFamily: "LouisGeorgeCafeBold",
-        fontSize: 20,
-    },
-    link: {
-        fontFamily: "LouisGeorgeCafe",
-        fontSize: 20,
-    },
-
-    // Dish
-    name: {
-        lineHeight: "100%",
-        fontFamily: "Adelia",
-        fontSize: 36,
-    },
-    text: {
-        // textAlign: "center",
-        fontFamily: "LouisGeorgeCafe",
-        fontSize: 20,
-    },
-
-    ratingContainer: {
-        alignItems: "center",
-        borderRadius: 10,
-        marginTop: "4%",
-        minWidth: "80%",
-        paddingHorizontal: "3%",
-        paddingVertical: "3%",
-    },
-
-    attributeContainer: {
-        justifyContent: "center",
-        flexDirection: "row",
-        alignItems: "center",
-        borderRadius: 10,
-        marginTop: "4%",
-        minWidth: "80%",
-    },
-
-    button: {
-        alignItems: "center",
-        borderRadius: 10,
-        marginVertical: "4%",
-        minWidth: "80%",
-        paddingHorizontal: "8%",
-        paddingVertical: "3%",
-    },
-
     image: {
         width: imageSize,
         height: imageSize,
-        borderRadius: 10,
     },
-
-    fullInput: {
-        marginTop: "1%",
-        minWidth: "80%",
-        paddingVertical: "3%",
-        paddingHorizontal: "3%",
+    imageButton: {
+        paddingHorizontal: 0,
+        paddingVertical: 0,
+    },
+    imageContainer: {
+        position: "relative",
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    imageOverlay: {
+        position: "absolute",
         borderRadius: 10,
-        fontFamily: "LouisGeorgeCafe",
-        fontSize: 20,
+        backgroundColor: "rgba(255, 255, 255, 0.5)",
+    },
+    imageEditIcon: {
+        position: "absolute",
+    },
+    ratingContainer: {
+        alignItems: "center",
+        borderRadius: 10,
+        minWidth: "80%",
+        paddingHorizontal: "3%",
+        paddingVertical: "3%",
+    },
+    starRatingStyle: {
+        marginTop: 5,
+        marginBottom: 2,
+    },
+    starStyle: {
+        marginHorizontal: 7,
+    },
+    attributeContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: 10,
+        minWidth: "80%",
+    },
+    // FIX THIS AT SOME POINT
+    attributeText: {
+        marginRight: 8,
+    },
+    switchViewModeButton: {
+        marginRight: 8,
     },
 });

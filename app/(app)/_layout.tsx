@@ -1,29 +1,25 @@
 import React from "react";
-
-// Routing
 import { Redirect, Tabs } from "expo-router";
 
+// Styles
+import { StyleSheet } from "react-native";
+
 // Icons
-import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { FontAwesome6 } from "@expo/vector-icons";
+import { FontAwesome, FontAwesome6 } from "@expo/vector-icons";
 
 // Contexts
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 
 export default function AppLayout() {
-    // Authentication
+    const { theme } = useTheme();
     const { authState } = useAuth();
 
+    // Redirect to the welcome screen if not authenticated
     if (!authState?.authenticated) {
-        // Redirect to the welcome screen if not authenticated
         return <Redirect href="/" />;
     }
 
-    // Themes
-    const { theme } = useTheme();
-
-    // Define application layout here
     return (
         <Tabs
             screenOptions={{
@@ -34,7 +30,6 @@ export default function AppLayout() {
                 },
             }}
         >
-            {/* Home tab */}
             <Tabs.Screen
                 name="(home)"
                 options={{
@@ -43,14 +38,13 @@ export default function AppLayout() {
                     tabBarIcon: ({ color }) => (
                         <FontAwesome
                             name="home"
-                            size={28}
-                            style={{ marginBottom: -3 }}
+                            size={tabBarIconSize}
+                            style={styles.tabBarIconMargin}
                             color={color}
                         />
                     ),
                 }}
             />
-            {/* Search tab */}
             <Tabs.Screen
                 name="(search)"
                 options={{
@@ -59,14 +53,13 @@ export default function AppLayout() {
                     tabBarIcon: ({ color }) => (
                         <FontAwesome6
                             name="bowl-food"
-                            size={28}
-                            style={{ marginBottom: -3 }}
+                            size={tabBarIconSize}
+                            style={styles.tabBarIconMargin}
                             color={color}
                         />
                     ),
                 }}
             />
-            {/* Settings tab */}
             <Tabs.Screen
                 name="settings"
                 options={{
@@ -75,8 +68,8 @@ export default function AppLayout() {
                     tabBarIcon: ({ color }) => (
                         <FontAwesome
                             name="gear"
-                            size={28}
-                            style={{ marginBottom: -3 }}
+                            size={tabBarIconSize}
+                            style={styles.tabBarIconMargin}
                             color={color}
                         />
                     ),
@@ -85,3 +78,10 @@ export default function AppLayout() {
         </Tabs>
     );
 }
+
+const tabBarIconSize = 28;
+const styles = StyleSheet.create({
+    tabBarIconMargin: {
+        marginBottom: -3,
+    },
+});

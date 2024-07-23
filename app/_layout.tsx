@@ -1,8 +1,5 @@
-// Core
 import React, { useEffect } from "react";
 import "react-native-reanimated";
-
-// Routing
 import { Slot } from "expo-router";
 
 // Styling
@@ -10,7 +7,7 @@ import { useFonts } from "expo-font";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import * as SplashScreen from "expo-splash-screen";
 
-// Providers
+// Contexts
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";

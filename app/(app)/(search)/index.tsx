@@ -1,28 +1,32 @@
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
+import axios from "axios";
+import { router, useFocusEffect } from "expo-router";
 
+// Components and styles
+import { StyleSheet } from "react-native";
+import { Image } from "expo-image";
 import {
-    Text,
-    TextInput,
     Pressable,
-    View,
-    StyleSheet,
+    SerifText,
+    SansSerifText,
     SafeAreaView,
     ScrollView,
-} from "react-native";
-
-import axios from "axios";
-
-import { Image } from "expo-image";
-
-import { useTheme } from "@/contexts/ThemeContext";
-import { API_URL } from "@/contexts/AuthContext";
+    TextInput,
+    View,
+} from "@/components/Styled";
+import { spacing } from "@/constants/Spacing";
 
 // Icons
 import { StarIcon } from "react-native-star-rating-widget";
-import { FontAwesome, FontAwesome6 } from "@expo/vector-icons";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import {
+    FontAwesome,
+    FontAwesome6,
+    MaterialCommunityIcons,
+} from "@expo/vector-icons";
 
-import { router, useFocusEffect } from "expo-router";
+// Contexts
+import { useTheme } from "@/contexts/ThemeContext";
+import { API_URL } from "@/contexts/AuthContext";
 
 type Dish = {
     id: number;
@@ -35,6 +39,8 @@ type Dish = {
 };
 
 export default function SearchScreen() {
+    const { theme } = useTheme();
+
     const [dishes, setDishes] = useState<Dish[]>([]);
     const [page, setPage] = useState(1);
     const [loading, setLoading] = useState(false);
@@ -147,26 +153,19 @@ export default function SearchScreen() {
         }
     };
 
-    // Theme
-    const { theme } = useTheme();
-
     return (
-        <SafeAreaView style={[styles.container, { backgroundColor: theme.c1 }]}>
-            <View style={styles.searchContainer}>
+        <SafeAreaView>
+            <View style={[styles.searchContainer, spacing.mb4]}>
                 <TextInput
                     placeholder="Search"
-                    placeholderTextColor={theme.c3}
                     autoCapitalize="words"
                     autoCorrect={false}
                     onChangeText={(text: string) => setSearchQuery(text)}
-                    style={[
-                        styles.fullInput,
-                        { color: theme.c4, backgroundColor: theme.c2 },
-                    ]}
+                    style={styles.searchInput}
                 />
                 <Pressable
                     onPress={() => (page == 1 ? getDishes() : setPage(1))}
-                    style={[styles.searchButton, { backgroundColor: theme.c2 }]}
+                    style={styles.searchButton}
                 >
                     <FontAwesome name="search" size={24} color={theme.c5} />
                 </Pressable>
@@ -176,7 +175,7 @@ export default function SearchScreen() {
                             ? setSortOrder(sortOrder + 1)
                             : setSortOrder(0)
                     }
-                    style={[styles.searchButton, { backgroundColor: theme.c2 }]}
+                    style={styles.searchButton}
                 >
                     <MaterialCommunityIcons
                         name={icon as any}
@@ -185,103 +184,62 @@ export default function SearchScreen() {
                     />
                 </Pressable>
             </View>
-            <ScrollView contentContainerStyle={styles.scrollViewContainer}>
+            <ScrollView>
                 {dishes
                     ? dishes.map((dish: Dish, index: number) => (
                           <Pressable
-                              style={[
-                                  styles.dishContainer,
-                                  { backgroundColor: theme.c2 },
-                              ]}
+                              style={[styles.dishContainer, spacing.mb4]}
                               key={index}
                               onPress={() => router.push(`/dish/${dish.id}`)}
                           >
-                              <Image
-                                  style={styles.thumbnail}
-                                  source={dish.image}
-                              />
-                              <View style={styles.details}>
-                                  <Text
-                                      style={[
-                                          styles.dishName,
-                                          {
-                                              color: theme.c4,
-                                          },
-                                      ]}
-                                  >
-                                      {dish.name}
-                                  </Text>
-                                  <Text
-                                      style={[
-                                          styles.dishInfo,
-                                          {
-                                              color: theme.c4,
-                                          },
-                                      ]}
-                                  >
+                              <Image style={styles.image} source={dish.image} />
+                              <View style={styles.detailContainer}>
+                                  <SerifText size="h3">{dish.name}</SerifText>
+                                  <SansSerifText size="h4">
                                       {dish.cuisine}
-                                  </Text>
-                                  <View style={styles.splitContainer}>
-                                      <Text
-                                          style={[
-                                              styles.dishInfo,
-                                              {
-                                                  color: theme.c4,
-                                                  marginRight: 2,
-                                              },
-                                          ]}
-                                      >
-                                          {parseInt(dish.rating) / 2}
-                                      </Text>
-                                      <StarIcon
-                                          index={0}
-                                          type="full"
-                                          size={28}
-                                          color="#fdd835"
-                                      />
-                                      <Text
-                                          style={[
-                                              styles.dishInfo,
-                                              {
-                                                  color: theme.c4,
-                                                  marginLeft: 10,
-                                                  marginRight: 4,
-                                              },
-                                          ]}
-                                      >
-                                          {dish.time_to_make}
-                                      </Text>
-                                      <FontAwesome6
-                                          name="clock"
-                                          size={24}
-                                          color={theme.c4}
-                                      />
+                                  </SansSerifText>
+                                  <View style={styles.rowContainer}>
+                                      <View style={styles.ratingContainer}>
+                                          <SansSerifText size="h4">
+                                              {parseInt(dish.rating) / 2}
+                                          </SansSerifText>
+                                          <StarIcon
+                                              index={0}
+                                              type="full"
+                                              size={28}
+                                              color={theme.c6}
+                                          />
+                                      </View>
+                                      <View style={styles.ratingContainer}>
+                                          <SansSerifText size="h4">
+                                              {dish.time_to_make}
+                                          </SansSerifText>
+                                          <FontAwesome6
+                                              name="clock"
+                                              size={24}
+                                              color={theme.c4}
+                                          />
+                                      </View>
                                   </View>
                               </View>
                           </Pressable>
                       ))
                     : null}
 
-                {loading && (
-                    <Text style={[styles.text, { color: theme.c4 }]}>
-                        Loading...
-                    </Text>
-                )}
+                {loading && <SansSerifText size="h3">Loading...</SansSerifText>}
 
                 {dishes.length == 0 && (
-                    <Text style={[styles.text, { color: theme.c4 }]}>
-                        No Dishes Found.
-                    </Text>
+                    <SansSerifText size="h3">No Dishes Found.</SansSerifText>
                 )}
 
                 {hasNextPage && !loading && (
                     <Pressable
                         onPress={() => setPage((prevPage) => prevPage + 1)}
-                        style={[styles.button, { backgroundColor: theme.c2 }]}
+                        style={spacing.mb4}
                     >
-                        <Text style={[styles.text, { color: theme.c5 }]}>
+                        <SansSerifText size="h2" style={{ color: theme.c5 }}>
                             Load More
-                        </Text>
+                        </SansSerifText>
                     </Pressable>
                 )}
             </ScrollView>
@@ -290,80 +248,36 @@ export default function SearchScreen() {
 }
 
 const styles = StyleSheet.create({
-    // Root containers
-    container: {
-        flex: 1,
-        alignItems: "center",
-    },
-    scrollViewContainer: {
-        alignItems: "center",
-        minWidth: "100%",
-    },
-
-    // Search
     searchContainer: {
-        minWidth: "80%",
         flexDirection: "row",
         justifyContent: "space-between",
-        marginBottom: "4%",
+        minWidth: "80%",
     },
     searchButton: {
-        paddingVertical: "3%",
-        paddingHorizontal: "3%",
-        borderRadius: 10,
+        minWidth: 0,
     },
-    fullInput: {
+    searchInput: {
         minWidth: "52%",
-        paddingVertical: "3%",
-        paddingHorizontal: "3%",
-        borderRadius: 10,
-        fontFamily: "LouisGeorgeCafe",
-        fontSize: 20,
     },
-
-    // Dish
     dishContainer: {
-        marginBottom: "4%",
-        minWidth: "80%",
-        paddingVertical: "3%",
-        paddingHorizontal: "3%",
-        borderRadius: 10,
         flexDirection: "row",
     },
-    splitContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-    },
-    details: {
+    detailContainer: {
         marginLeft: "4%",
         gap: 4,
     },
-    thumbnail: {
+    rowContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 12,
+    },
+    ratingContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 4,
+    },
+    image: {
         width: 100,
         height: 100,
-        borderRadius: 10,
-    },
-    dishName: {
-        lineHeight: 40,
-        fontFamily: "Adelia",
-        fontSize: 20,
-    },
-    dishInfo: {
-        fontFamily: "LouisGeorgeCafeBold",
-        fontSize: 18,
-    },
-
-    // Other
-    button: {
-        marginBottom: "4%",
-        minWidth: "80%",
-        paddingVertical: "3%",
-        paddingHorizontal: "8%",
-        borderRadius: 10,
-    },
-    text: {
-        textAlign: "center",
-        fontFamily: "LouisGeorgeCafe",
-        fontSize: 20,
     },
 });
