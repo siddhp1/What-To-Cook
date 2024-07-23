@@ -1,23 +1,29 @@
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
-
-import {
-    FlatList,
-    View,
-    Text,
-    StyleSheet,
-    Pressable,
-    SafeAreaView,
-    ScrollView,
-} from "react-native";
 import { router, useFocusEffect } from "expo-router";
 
-import { useTheme } from "@/contexts/ThemeContext";
+// Components and styles
+import {
+    FlatList,
+    Pressable as DefaultPressable,
+    StyleSheet,
+} from "react-native";
+import {
+    Image,
+    Pressable,
+    SansSerifText,
+    SafeAreaView,
+    ScrollView,
+    View,
+} from "@/components/Styled";
+import { spacing } from "@/constants/Spacing";
 
-import { API_URL } from "@/contexts/AuthContext";
-
+// Icons
 import { Feather } from "@expo/vector-icons";
-import { Image } from "expo-image";
+
+// Contexts
+import { useTheme } from "@/contexts/ThemeContext";
+import { API_URL } from "@/contexts/AuthContext";
 
 type Dish = {
     id: number;
@@ -30,6 +36,8 @@ type Dish = {
 };
 
 export default function HomeScreen() {
+    const { theme } = useTheme();
+
     const [quickDishes, setQuickDishes] = useState<Dish[]>([]);
     const [favoriteDishes, setFavoriteDishes] = useState<Dish[]>([]);
     const [oldestDishes, setOldestDishes] = useState<Dish[]>([]);
@@ -151,197 +159,91 @@ export default function HomeScreen() {
         getOldestDishes();
     }, []);
 
-    const { theme } = useTheme();
+    interface RecommendationListProps {
+        data: Dish[];
+    }
+
+    const RecommendationList = ({ data }: RecommendationListProps) => {
+        return (
+            <FlatList
+                horizontal={true}
+                data={data}
+                style={[
+                    styles.recommendationContainer,
+                    spacing.mt2,
+                    spacing.mb2,
+                ]}
+                renderItem={({ item }) => (
+                    <DefaultPressable
+                        style={[
+                            styles.recommendation,
+                            { backgroundColor: theme.c2 },
+                        ]}
+                        key={item.id}
+                        onPress={() => router.navigate(`/${item.id}`)}
+                    >
+                        <Image
+                            style={styles.image}
+                            source={{ uri: item.image }}
+                        />
+                        <SansSerifText size="h3">{item.name}</SansSerifText>
+                    </DefaultPressable>
+                )}
+                keyExtractor={(item) => item.id.toString()}
+            />
+        );
+    };
 
     return (
-        <SafeAreaView style={[styles.container, { backgroundColor: theme.c1 }]}>
-            <ScrollView contentContainerStyle={styles.scrollViewContainer}>
-                {/* Add section */}
-                <Text
+        <SafeAreaView>
+            <ScrollView>
+                <SansSerifText size="h1">Made Something Today?</SansSerifText>
+                <View
                     style={[
-                        styles.heading,
-                        {
-                            color: theme.c4,
-                        },
+                        styles.addButtonContainer,
+                        spacing.mt2,
+                        spacing.mb4,
                     ]}
                 >
-                    Made Something Today?
-                </Text>
-                <View style={styles.splitContainer}>
                     <Pressable
                         onPress={() => router.push("/add")}
-                        style={[
-                            styles.button,
-                            {
-                                backgroundColor: theme.c2,
-                            },
-                        ]}
+                        style={styles.addButton}
                     >
                         <Feather name="plus" size={36} color={theme.c3} />
-                        <Text style={[styles.text, { color: theme.c5 }]}>
+                        <SansSerifText size="h3" style={{ color: theme.c5 }}>
                             New Dish
-                        </Text>
+                        </SansSerifText>
                     </Pressable>
                     <Pressable
                         onPress={() => router.push("/add-existing")}
-                        style={[
-                            styles.button,
-                            {
-                                backgroundColor: theme.c2,
-                            },
-                        ]}
+                        style={styles.addButton}
                     >
-                        <Feather name="plus" size={36} color={theme.c3} />
-                        <Text style={[styles.text, { color: theme.c5 }]}>
+                        <Feather
+                            name="refresh-ccw"
+                            size={36}
+                            color={theme.c3}
+                        />
+                        <SansSerifText size="h3" style={{ color: theme.c5 }}>
                             Existing Dish
-                        </Text>
+                        </SansSerifText>
                     </Pressable>
                 </View>
-
                 {quickDishes.length > 0 && favoriteDishes.length > 0 ? (
                     <>
-                        <Text
-                            style={[
-                                styles.heading,
-                                {
-                                    color: theme.c4,
-                                },
-                            ]}
-                        >
-                            Need Something Quick?
-                        </Text>
-                        <FlatList
-                            horizontal={true}
-                            data={quickDishes}
-                            style={styles.recommendationContainer}
-                            renderItem={({ item }) => (
-                                <Pressable
-                                    style={[
-                                        styles.recommendation,
-                                        { backgroundColor: theme.c2 },
-                                    ]}
-                                    key={item.id}
-                                    onPress={() =>
-                                        router.navigate(`/${item.id}`)
-                                    }
-                                >
-                                    <Image
-                                        style={styles.thumbnail}
-                                        source={{ uri: item.image }}
-                                    />
-                                    <Text
-                                        style={[
-                                            styles.name,
-                                            {
-                                                color: theme.c4,
-                                            },
-                                        ]}
-                                    >
-                                        {item.name}
-                                    </Text>
-                                </Pressable>
-                            )}
-                            keyExtractor={(item) => item.id.toString()}
-                        />
-                        <Text
-                            style={[
-                                styles.heading,
-                                {
-                                    color: theme.c4,
-                                },
-                            ]}
-                        >
-                            Want Something Different?
-                        </Text>
-                        <FlatList
-                            horizontal={true}
-                            data={oldestDishes}
-                            style={styles.recommendationContainer}
-                            renderItem={({ item }) => (
-                                <Pressable
-                                    style={[
-                                        styles.recommendation,
-                                        { backgroundColor: theme.c2 },
-                                    ]}
-                                    key={item.id}
-                                    onPress={() =>
-                                        router.navigate(`/${item.id}`)
-                                    }
-                                >
-                                    <Image
-                                        style={styles.thumbnail}
-                                        source={{ uri: item.image }}
-                                    />
-                                    <Text
-                                        style={[
-                                            styles.name,
-                                            {
-                                                color: theme.c4,
-                                            },
-                                        ]}
-                                    >
-                                        {item.name}efjsdjkfh
-                                    </Text>
-                                </Pressable>
-                            )}
-                            keyExtractor={(item) => item.id.toString()}
-                        />
-                        <Text
-                            style={[
-                                styles.heading,
-                                {
-                                    color: theme.c4,
-                                },
-                            ]}
-                        >
-                            Your Favourites
-                        </Text>
-                        <FlatList
-                            horizontal={true}
-                            data={favoriteDishes}
-                            style={styles.recommendationContainer}
-                            renderItem={({ item }) => (
-                                <Pressable
-                                    style={[
-                                        styles.recommendation,
-                                        { backgroundColor: theme.c2 },
-                                    ]}
-                                    key={item.id}
-                                    onPress={() =>
-                                        router.navigate(`/${item.id}`)
-                                    }
-                                >
-                                    <Image
-                                        style={styles.thumbnail}
-                                        source={{ uri: item.image }}
-                                    />
-                                    <Text
-                                        style={[
-                                            styles.name,
-                                            {
-                                                color: theme.c4,
-                                            },
-                                        ]}
-                                    >
-                                        {item.name}
-                                    </Text>
-                                </Pressable>
-                            )}
-                            keyExtractor={(item) => item.id.toString()}
-                        />
+                        <SansSerifText size="h1">Quick and Easy</SansSerifText>
+                        <RecommendationList data={quickDishes} />
+                        <SansSerifText size="h1">
+                            Hasn't Been Made in a While
+                        </SansSerifText>
+                        <RecommendationList data={oldestDishes} />
+                        <SansSerifText size="h1">Your Favourites</SansSerifText>
+                        <RecommendationList data={favoriteDishes} />
                     </>
                 ) : (
                     <>
-                        <Text
-                            style={[
-                                styles.name,
-                                {
-                                    color: theme.c4,
-                                },
-                            ]}
-                        >
+                        <SansSerifText size="h3" style={styles.addMoreText}>
                             Add more dishes to enable recommendations.
-                        </Text>
+                        </SansSerifText>
                     </>
                 )}
             </ScrollView>
@@ -350,60 +252,30 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-    // Containers
-    container: {
-        flex: 1,
-    },
-    scrollViewContainer: {
-        alignItems: "center",
-    },
-    splitContainer: {
-        marginVertical: "4%",
-        minWidth: "80%",
+    addButtonContainer: {
         flexDirection: "row",
         justifyContent: "space-between",
+        minWidth: "80%",
+    },
+    addButton: {
+        minWidth: "38%",
+        paddingVertical: "10%",
     },
     recommendationContainer: {
-        marginTop: "4%",
-        marginBottom: "1%",
-        marginHorizontal: 4,
-        paddingBottom: "3%",
+        marginHorizontal: "1%",
+        paddingBottom: 10,
     },
-
-    heading: {
-        fontFamily: "LouisGeorgeCafe",
-        fontSize: 24,
-    },
-
     recommendation: {
-        marginRight: 10,
         alignItems: "center",
+        marginRight: 4,
         borderRadius: 10,
-        padding: 8,
-        paddingBottom: 20,
+        padding: 4,
     },
-    thumbnail: {
+    image: {
         width: 120,
         height: 120,
     },
-    name: {
-        fontFamily: "LouisGeorgeCafe",
-        fontSize: 20,
-        marginVertical: 4,
-        marginBottom: 8,
-    },
-
-    button: {
-        alignItems: "center",
-        justifyContent: "center",
-        minWidth: "38%",
-        minHeight: "16%",
-        borderRadius: 10,
-    },
-    text: {
-        flexWrap: "wrap",
+    addMoreText: {
         textAlign: "center",
-        fontFamily: "LouisGeorgeCafe",
-        fontSize: 20,
     },
 });
