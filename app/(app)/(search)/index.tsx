@@ -4,8 +4,8 @@ import { router, useFocusEffect } from "expo-router";
 
 // Components and styles
 import { StyleSheet } from "react-native";
-import { Image } from "expo-image";
 import {
+    Image,
     Pressable,
     SerifText,
     SansSerifText,
