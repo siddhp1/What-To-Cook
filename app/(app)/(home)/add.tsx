@@ -1,33 +1,32 @@
 import { useState } from "react";
 import axios from "axios";
-
 import { router } from "expo-router";
 
+// Components and styles
+import { Alert, Dimensions, StyleSheet } from "react-native";
+import StarRating from "react-native-star-rating-widget";
 import {
-    View,
+    Pressable,
+    Image,
+    SansSerifText,
     SafeAreaView,
     ScrollView,
-    Text,
     TextInput,
-    Pressable,
-    Alert,
-    StyleSheet,
-    Dimensions,
-} from "react-native";
-import StarRating from "react-native-star-rating-widget";
+    View,
+} from "@/components/Styled";
+import { pickOrTake } from "@/components/ImagePicker";
+import { spacing } from "@/constants/Spacing";
 
-import { Image } from "expo-image";
-import * as ImagePicker from "expo-image-picker";
-
-import { useTheme } from "@/contexts/ThemeContext";
-
-// Get api url from the context
-import { API_URL } from "@/contexts/AuthContext";
-
+// Icons
 import { FontAwesome6 } from "@expo/vector-icons";
 
+// Contexts
+import { API_URL } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
+
 export default function AddScreen() {
-    // Fields
+    const { theme } = useTheme();
+
     const [name, setName] = useState("");
     const [image, setImage] = useState<string | null>(null);
     const [cuisine, setCuisine] = useState("");
@@ -69,7 +68,10 @@ export default function AddScreen() {
         } as any); // TypeScript compatibility
 
         try {
-            const result = await axios.post(`${API_URL}/api/dishes/`, formData);
+            const result = await axios.post(
+                `${API_URL}/api/dishes/dishes/`,
+                formData
+            );
             console.log(result.status);
             router.back();
             return {
@@ -93,137 +95,63 @@ export default function AddScreen() {
         }
     };
 
-    // Ask the user if they want to take a photo or select from camera roll
-    const pickOrTake = async () => {
-        Alert.alert(
-            "Upload Photo",
-            "Choose an option",
-            [
-                {
-                    text: "Take Photo",
-                    onPress: () => takePhoto(),
-                },
-                {
-                    text: "Choose from Library",
-                    onPress: () => pickImage(),
-                },
-                {
-                    text: "Cancel",
-                    style: "cancel",
-                },
-            ],
-            { cancelable: true }
-        );
-    };
-
-    const pickImage = async () => {
-        const permission =
-            await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-        if (permission.granted) {
-            let result = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                aspect: [1, 1],
-                quality: 1,
-                selectionLimit: 1,
-                allowsEditing: true,
-            });
-
-            if (!result.canceled) {
-                setImage(result.assets[0].uri);
-            }
+    const imagePickerHandler = async () => {
+        const uri = await pickOrTake();
+        if (uri) {
+            setImage(uri);
         }
-        return;
     };
-
-    const takePhoto = async () => {
-        const permission = await ImagePicker.requestCameraPermissionsAsync();
-
-        if (permission.granted) {
-            let result = await ImagePicker.launchCameraAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                aspect: [1, 1],
-                quality: 1,
-                selectionLimit: 1,
-                allowsEditing: true,
-            });
-
-            if (!result.canceled) {
-                setImage(result.assets[0].uri);
-            }
-        }
-        return;
-    };
-
-    // Theme
-    const { theme } = useTheme();
 
     return (
-        <SafeAreaView style={[styles.container, { backgroundColor: theme.c1 }]}>
-            <ScrollView contentContainerStyle={styles.scrollViewContainer}>
+        <SafeAreaView>
+            <ScrollView>
                 <TextInput
                     placeholder="Name of Dish"
-                    placeholderTextColor={theme.c3}
                     autoCapitalize="words"
                     autoCorrect={false}
                     onChangeText={(text: string) => setName(text)}
-                    style={[
-                        styles.fullInput,
-                        { color: theme.c4, backgroundColor: theme.c2 },
-                    ]}
+                    style={spacing.mt4}
                 />
-                {/* Image */}
-                {/* Conditionally render image */}
                 {image && (
                     <Image
-                        style={styles.image}
+                        style={[styles.image, spacing.mt4]}
                         source={{ uri: image }}
-                        contentFit="contain"
                     />
                 )}
-                <Pressable
-                    onPress={pickOrTake}
-                    style={[styles.button, { backgroundColor: theme.c2 }]}
-                >
-                    <Text style={[styles.text, { color: theme.c5 }]}>
-                        {/* Change text depending on whether or not there already is an image */}
+                <Pressable onPress={imagePickerHandler} style={spacing.mt4}>
+                    <SansSerifText size="h3" style={{ color: theme.c5 }}>
                         {image ? "Change Image" : "Add Image"}
-                    </Text>
+                    </SansSerifText>
                 </Pressable>
-
                 <TextInput
                     placeholder="Cuisine"
-                    placeholderTextColor={theme.c3}
                     autoCapitalize="words"
                     autoCorrect={false}
                     onChangeText={(text: string) => setCuisine(text)}
-                    style={[
-                        styles.fullInput,
-                        { color: theme.c4, backgroundColor: theme.c2 },
-                    ]}
+                    style={spacing.mt4}
                 />
-
                 <View
                     style={[
                         styles.ratingContainer,
+                        spacing.mt4,
                         { backgroundColor: theme.c2 },
                     ]}
                 >
-                    <Text style={[styles.text, { color: theme.c4 }]}>
-                        Rating
-                    </Text>
-                    <StarRating rating={rating} onChange={setRating} />
+                    <SansSerifText size="h3">Rating</SansSerifText>
+                    <StarRating
+                        rating={rating}
+                        onChange={setRating}
+                        color={theme.c6}
+                    />
                 </View>
-
                 <View
                     style={[
                         styles.ratingContainer,
+                        spacing.mt4,
                         { backgroundColor: theme.c2 },
                     ]}
                 >
-                    <Text style={[styles.text, { color: theme.c4 }]}>
-                        Time to Cook
-                    </Text>
+                    <SansSerifText size="h3">Time to Cook</SansSerifText>
                     <StarRating
                         rating={timeToMake}
                         onChange={setTimeToMake}
@@ -241,17 +169,13 @@ export default function AddScreen() {
                         starStyle={{ marginHorizontal: 7 }}
                     />
                 </View>
-
                 <Pressable
                     onPress={createDish}
-                    style={[
-                        styles.button,
-                        { backgroundColor: theme.c2, marginBottom: "4%" },
-                    ]}
+                    style={[spacing.mt4, spacing.mt4]}
                 >
-                    <Text style={[styles.text, { color: theme.c5 }]}>
+                    <SansSerifText size="h2" style={{ color: theme.c5 }}>
                         Add Dish
-                    </Text>
+                    </SansSerifText>
                 </Pressable>
             </ScrollView>
         </SafeAreaView>
@@ -262,45 +186,15 @@ const screenWidth = Dimensions.get("window").width;
 const imageSize = screenWidth * 0.8;
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    scrollViewContainer: {
-        alignItems: "center",
-    },
-    ratingContainer: {
-        minWidth: "80%",
-        alignItems: "center",
-        marginTop: "4%",
-        paddingVertical: "3%",
-        paddingHorizontal: "3%",
-        borderRadius: 10,
-    },
-    text: {
-        textAlign: "center",
-        fontFamily: "LouisGeorgeCafe",
-        fontSize: 20,
-    },
-    button: {
-        marginTop: "4%",
-        minWidth: "80%",
-        paddingVertical: "3%",
-        paddingHorizontal: "8%",
-        borderRadius: 10,
-    },
     image: {
-        marginTop: "4%",
         width: imageSize,
         height: imageSize,
-        borderRadius: 10,
     },
-    fullInput: {
-        marginTop: "4%",
-        minWidth: "80%",
-        paddingVertical: "3%",
-        paddingHorizontal: "3%",
+    ratingContainer: {
+        alignItems: "center",
         borderRadius: 10,
-        fontFamily: "LouisGeorgeCafe",
-        fontSize: 20,
+        minWidth: "80%",
+        paddingHorizontal: "3%",
+        paddingVertical: "3%",
     },
 });

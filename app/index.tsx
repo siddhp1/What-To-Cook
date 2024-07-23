@@ -1,23 +1,25 @@
 import { useState } from "react";
-import { router } from "expo-router";
+import { Link, router } from "expo-router";
 
-// Components
+// Components and styles
+import { Alert, StyleSheet } from "react-native";
 import {
-    StyleSheet,
-    TextInput,
     Pressable,
-    Text,
-    View,
+    SerifText,
+    SansSerifText,
     SafeAreaView,
-    Alert,
-} from "react-native";
+    TextInput,
+    View,
+} from "@/components/Styled";
+import { spacing } from "@/constants/Spacing";
 
 // Contexts
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 
 export default function LoginScreen() {
-    // Login functionality
+    const { theme } = useTheme();
+
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const { onLogin } = useAuth();
@@ -33,15 +35,13 @@ export default function LoginScreen() {
             const result = await onLogin!(email, password);
 
             if (result.error) {
-                // Error
-                console.log(result);
+                console.log(result.status);
                 Alert.alert(
                     `Error (${result.status})`,
                     result.detail || "Login failed."
                 );
             } else {
-                // Success
-                console.log(result);
+                console.log(result.status);
                 router.replace("(home)");
             }
         } catch (e) {
@@ -53,98 +53,47 @@ export default function LoginScreen() {
         }
     };
 
-    // Themes
-    const { theme } = useTheme();
-
     return (
-        <SafeAreaView style={[styles.container, { backgroundColor: theme.c1 }]}>
-            <Text
-                style={[
-                    styles.title,
-                    {
-                        color: theme.c4,
-                    },
-                ]}
-            >
-                What to Cook
-            </Text>
+        <SafeAreaView
+            style={{
+                justifyContent: "center",
+            }}
+        >
+            <SerifText size="h1">What to Cook</SerifText>
             <TextInput
                 placeholder="Email"
-                placeholderTextColor={theme.c3}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoComplete="email"
                 autoCorrect={false}
                 onChangeText={(text: string) => setEmail(text)}
-                style={[
-                    styles.input,
-                    { color: theme.c4, backgroundColor: theme.c2 },
-                ]}
+                style={spacing.mt4}
             />
             <TextInput
                 placeholder="Password"
-                placeholderTextColor={theme.c3}
                 secureTextEntry={true}
                 onChangeText={(text: string) => setPassword(text)}
-                style={[
-                    styles.input,
-                    { color: theme.c4, backgroundColor: theme.c2 },
-                ]}
+                style={spacing.mt4}
             />
-            <Pressable
-                onPress={login}
-                style={[styles.button, { backgroundColor: theme.c2 }]}
-            >
-                <Text style={[styles.text, { color: theme.c5 }]}>Login</Text>
+            <Pressable onPress={login} style={spacing.mt4}>
+                <SansSerifText size="h2" style={{ color: theme.c5 }}>
+                    Login
+                </SansSerifText>
             </Pressable>
-            <View style={styles.link}>
-                <Text style={[styles.text, { color: theme.c3 }]}>
-                    Don't have an account?
-                </Text>
-                <Pressable onPress={() => router.replace("/register")}>
-                    <Text style={[styles.text, { color: theme.c5 }]}>
+            <View style={[spacing.mt4, styles.registerLinkContainer]}>
+                <SansSerifText size="h3">Don't have an account?</SansSerifText>
+                <Link replace href="/register">
+                    <SansSerifText size="h2" style={{ color: theme.c5 }}>
                         Sign Up
-                    </Text>
-                </Pressable>
+                    </SansSerifText>
+                </Link>
             </View>
         </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        alignItems: "center",
-        justifyContent: "center",
-    },
-    title: {
-        lineHeight: "100%",
-        fontFamily: "Adelia",
-        fontSize: 40,
-    },
-    input: {
-        marginTop: "4%",
-        minWidth: "80%",
-        paddingVertical: "3%",
-        paddingHorizontal: "3%",
-        borderRadius: 10,
-        fontFamily: "LouisGeorgeCafe",
-        fontSize: 20,
-    },
-    button: {
-        marginTop: "4%",
-        minWidth: "80%",
-        paddingVertical: "3%",
-        paddingHorizontal: "8%",
-        borderRadius: 10,
-    },
-    text: {
-        textAlign: "center",
-        fontFamily: "LouisGeorgeCafeBold",
-        fontSize: 20,
-    },
-    link: {
-        marginTop: "4%",
+    registerLinkContainer: {
         flexDirection: "row",
         gap: 8,
     },

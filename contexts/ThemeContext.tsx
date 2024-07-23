@@ -1,6 +1,12 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+    createContext,
+    useContext,
+    useState,
+    useEffect,
+    ReactNode,
+} from "react";
 import { LightTheme, DarkTheme } from "@/constants/Theme";
-import { useColorScheme } from "react-native";
+import { useColorScheme } from "@/hooks/useColorScheme";
 
 // Create a context for themes
 type ThemeContextType = {
@@ -12,7 +18,7 @@ const ThemeContext = createContext<ThemeContextType>({
 });
 
 // Custom Theme Provider component
-export const ThemeProvider = ({ children }: any) => {
+export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     const colorScheme = useColorScheme();
 
     // Set theme to current color scheme

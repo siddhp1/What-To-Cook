@@ -1,47 +1,30 @@
 import { router } from "expo-router";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+
+// Components and styles
+import { Pressable, SansSerifText, SafeAreaView } from "@/components/Styled";
+import { spacing } from "@/constants/Spacing";
+
+// Contexts
 import { useTheme } from "@/contexts/ThemeContext";
 
 export default function NotFoundScreen() {
     const { theme } = useTheme();
 
     return (
-        <View style={[styles.container, { backgroundColor: theme.c1 }]}>
-            <Text style={[styles.title, { color: theme.c4 }]}>
-                Something went wrong.
-            </Text>
+        <SafeAreaView
+            style={{
+                justifyContent: "center",
+            }}
+        >
+            <SansSerifText size="h1">Something went wrong.</SansSerifText>
             <Pressable
-                style={[styles.button, { backgroundColor: theme.c2 }]}
+                style={spacing.mt4}
                 onPress={() => router.replace("(home)")}
             >
-                <Text style={[styles.text, { color: theme.c5 }]}>
+                <SansSerifText size="h2" style={{ color: theme.c5 }}>
                     Return to Home
-                </Text>
+                </SansSerifText>
             </Pressable>
-        </View>
+        </SafeAreaView>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        alignItems: "center",
-        justifyContent: "center",
-        textAlign: "center",
-    },
-    title: {
-        fontFamily: "LouisGeorgeCafe",
-        fontSize: 32,
-    },
-    text: {
-        fontFamily: "LouisGeorgeCafeBold",
-        fontSize: 20,
-        textAlign: "center",
-    },
-    button: {
-        marginTop: "4%",
-        paddingVertical: "3%",
-        paddingHorizontal: "8%",
-        borderRadius: 10,
-    },
-});

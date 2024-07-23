@@ -10,6 +10,7 @@ const LightTheme = {
     c3: "#403D39",
     c4: "#252422",
     c5: "#c44536",
+    c6: "#fdd835",
 };
 
 const DarkTheme = {
@@ -19,6 +20,7 @@ const DarkTheme = {
     c3: "#CCC5B9",
     c4: "#FFFCF2",
     c5: "#c44536",
+    c6: "#fdd835",
 };
 
 export { LightTheme, DarkTheme };
