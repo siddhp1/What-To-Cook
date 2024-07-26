@@ -19,7 +19,7 @@ interface AuthProps {
     ) => Promise<any>;
     onLogin?: (email: string, password: string) => Promise<any>;
     onLogout?: () => Promise<any>;
-    onDelete?: () => Promise<any>; // here
+    onDelete?: () => Promise<any>;
 }
 
 const USER_ID_KEY = "user-id";
@@ -28,18 +28,14 @@ const REFRESH_TOKEN_KEY = "refresh-jwt";
 export const API_URL = process.env.EXPO_PUBLIC_API_URL;
 const AuthContext = createContext<AuthProps>({});
 
-export const useAuth = () => {
-    return useContext(AuthContext);
-};
-
 export const AuthProvider = ({ children }: any) => {
     const [authState, setAuthState] = useState<{
-        userId: string | null; // here
+        userId: string | null;
         accessToken: string | null;
         refreshToken: string | null;
         authenticated: boolean | null;
     }>({
-        userId: null, // here
+        userId: null,
         accessToken: null,
         refreshToken: null,
         authenticated: null,
@@ -91,12 +87,10 @@ export const AuthProvider = ({ children }: any) => {
             const refreshToken = await SecureStore.getItemAsync(
                 REFRESH_TOKEN_KEY
             );
-            // here
             const userId = await SecureStore.getItemAsync(USER_ID_KEY);
             if (accessToken && refreshToken) {
                 const isTokenValid = validateToken(accessToken);
                 if (isTokenValid) {
-                    // HERE
                     setAuthState({
                         userId,
                         accessToken,
@@ -157,7 +151,6 @@ export const AuthProvider = ({ children }: any) => {
                 email,
                 password,
             });
-
             await SecureStore.setItemAsync(
                 ACCESS_TOKEN_KEY,
                 result.data.access
@@ -166,24 +159,19 @@ export const AuthProvider = ({ children }: any) => {
                 REFRESH_TOKEN_KEY,
                 result.data.refresh
             );
-            // here
             await SecureStore.setItemAsync(
                 USER_ID_KEY,
                 result.data.id.toString()
             );
-
-            // here
             setAuthState({
                 userId: result.data.id.toString(),
                 accessToken: result.data.access,
                 refreshToken: result.data.refresh,
                 authenticated: true,
             });
-
             axios.defaults.headers.common[
                 "Authorization"
             ] = `Bearer ${result.data.access}`;
-
             return {
                 status: result.status,
             };
@@ -232,14 +220,12 @@ export const AuthProvider = ({ children }: any) => {
     };
 
     const logout = async () => {
-        // herer
         await SecureStore.deleteItemAsync(USER_ID_KEY);
         await SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY);
         await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
 
         axios.defaults.headers.common["Authorization"] = "";
 
-        // here
         setAuthState({
             userId: null,
             accessToken: null,
@@ -259,4 +245,8 @@ export const AuthProvider = ({ children }: any) => {
     return (
         <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
     );
+};
+
+export const useAuth = () => {
+    return useContext(AuthContext);
 };
