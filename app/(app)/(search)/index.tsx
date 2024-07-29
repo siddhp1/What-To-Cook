@@ -52,9 +52,12 @@ export default function SearchScreen() {
 
     // Refresh the page upon coming back (see if there is a better way to do this)
     const refreshPage = useCallback(() => {
-        console.log("refreshing");
         getDishes();
     }, []);
+
+    useEffect(() => {
+        getDishes();
+    }, [searchQuery, sortOrder]);
 
     useFocusEffect(
         useCallback(() => {
@@ -62,17 +65,11 @@ export default function SearchScreen() {
         }, [refreshPage])
     );
 
-    useEffect(() => {
-        getDishes();
-    }, [searchQuery, sortOrder]);
-
     // Pass in parameters here (ordering and search)
     const getDishes = async () => {
         try {
-            const fdishes = await onGetDishes!(searchQuery, sortOrder);
-            console.log("setting");
-            console.log(fdishes);
-            setDishes(fdishes);
+            const dishes = await onGetDishes!(searchQuery, sortOrder);
+            setDishes(dishes);
         } catch (e) {
             console.error("Unexpected error:", e);
             Alert.alert(
