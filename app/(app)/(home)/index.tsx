@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
-import axios from "axios";
 import { router, useFocusEffect } from "expo-router";
 
 // Components and styles
 import {
+    Alert,
     FlatList,
     Pressable as DefaultPressable,
     StyleSheet,
@@ -23,7 +23,7 @@ import { Feather } from "@expo/vector-icons";
 
 // Contexts
 import { useTheme } from "@/contexts/ThemeContext";
-import { API_URL } from "@/contexts/AuthContext";
+import { useDishes } from "@/contexts/DishContext";
 
 type Dish = {
     id: number;
@@ -37,21 +37,15 @@ type Dish = {
 
 export default function HomeScreen() {
     const { theme } = useTheme();
+    const { onGetRecommendations } = useDishes();
 
     const [quickDishes, setQuickDishes] = useState<Dish[]>([]);
     const [favoriteDishes, setFavoriteDishes] = useState<Dish[]>([]);
     const [oldestDishes, setOldestDishes] = useState<Dish[]>([]);
 
-    const [quickDishesLoading, setQuickDisheslLoading] = useState(false);
-    const [favouriteDishesLoading, setFavouriteDisheslLoading] =
-        useState(false);
-    const [oldestDishesLoading, setOldestDisheslLoading] = useState(false);
-
     // Refresh the page upon coming back, should be fine
     const refreshPage = useCallback(() => {
-        getQuickDishes();
-        getFavoriteDishes();
-        getOldestDishes();
+        getRecommendations();
     }, []);
 
     useFocusEffect(
@@ -63,100 +57,23 @@ export default function HomeScreen() {
         }, [refreshPage])
     );
 
-    const getQuickDishes = async () => {
-        setQuickDisheslLoading(true);
-
+    const getRecommendations = async () => {
         try {
-            const result = await axios.get(`${API_URL}/api/dishes/quick/`);
-            console.log(result.status);
-            setQuickDishes(result.data);
-            return {
-                status: result.status,
-            };
+            const dishes = await onGetRecommendations!();
+            setFavoriteDishes(dishes.data.favoriteDishes);
+            setQuickDishes(dishes.data.quickDishes);
+            setOldestDishes(dishes.data.oldestDishes);
         } catch (e) {
-            if (axios.isAxiosError(e) && e.response) {
-                console.log(e.response.data);
-                return {
-                    error: true,
-                    status: e.response.status,
-                    data: e.response.data || "An error occurred.",
-                };
-            } else {
-                return {
-                    error: true,
-                    status: null,
-                    data: "An unexpected error occurred.",
-                };
-            }
-        } finally {
-            setQuickDisheslLoading(false);
-        }
-    };
-
-    const getFavoriteDishes = async () => {
-        setFavouriteDisheslLoading(true);
-
-        try {
-            const result = await axios.get(`${API_URL}/api/dishes/favorite/`);
-            console.log(result.status);
-            setFavoriteDishes(result.data);
-            return {
-                status: result.status,
-            };
-        } catch (e) {
-            if (axios.isAxiosError(e) && e.response) {
-                console.log(e.response.data);
-                return {
-                    error: true,
-                    status: e.response.status,
-                    data: e.response.data || "An error occurred.",
-                };
-            } else {
-                return {
-                    error: true,
-                    status: null,
-                    data: "An unexpected error occurred.",
-                };
-            }
-        } finally {
-            setFavouriteDisheslLoading(false);
-        }
-    };
-
-    const getOldestDishes = async () => {
-        setOldestDisheslLoading(true);
-
-        try {
-            const result = await axios.get(`${API_URL}/api/dishes/oldest/`);
-            console.log(result.status);
-            setOldestDishes(result.data);
-            return {
-                status: result.status,
-            };
-        } catch (e) {
-            if (axios.isAxiosError(e) && e.response) {
-                console.log(e.response.data);
-                return {
-                    error: true,
-                    status: e.response.status,
-                    data: e.response.data || "An error occurred.",
-                };
-            } else {
-                return {
-                    error: true,
-                    status: null,
-                    data: "An unexpected error occurred.",
-                };
-            }
-        } finally {
-            setOldestDisheslLoading(false);
+            console.error("Unexpected error:", e);
+            Alert.alert(
+                "Error",
+                "An unexpected error occurred. Please try again."
+            );
         }
     };
 
     useEffect(() => {
-        getQuickDishes();
-        getFavoriteDishes();
-        getOldestDishes();
+        getRecommendations();
     }, []);
 
     interface RecommendationListProps {

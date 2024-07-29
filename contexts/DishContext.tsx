@@ -37,6 +37,7 @@ interface DishProps {
     onGetDishes?: (searchTerm: string, sortOrder: number) => Promise<Dish[]>;
     onEditDish?: (dish: Partial<Dish>) => Promise<any>;
     onDeleteDish?: (id: number) => Promise<any>;
+    onGetRecommendations?: () => Promise<any>; // fix this after
 }
 
 const DISHES_KEY = "@dishes";
@@ -47,9 +48,14 @@ const DishContext = createContext<DishProps>({});
 
 export const DishProvider = ({ children }: { children: ReactNode }) => {
     const [dishes, setDishes] = useState<Dish[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
+    const [loading, setLoading] = useState<boolean>(false);
 
     // Add Dish // Image (CREATE)
+
+    useEffect(() => {
+        console.log(dishes);
+        console.log("CHGNED DIDSEHS");
+    }, [dishes]);
 
     // MAYBE CONVERT THIS INTO PASSING IN ONE PARTIAL DISH
     const addDish = async (
@@ -59,6 +65,8 @@ export const DishProvider = ({ children }: { children: ReactNode }) => {
         timeToMake: number,
         image: string
     ) => {
+        setLoading(true);
+
         let formData = new FormData();
 
         // Append data
@@ -129,6 +137,8 @@ export const DishProvider = ({ children }: { children: ReactNode }) => {
                     data: "An unexpected error occurred.",
                 };
             }
+        } finally {
+            setLoading(false);
         }
 
         // Add to local storage
@@ -137,6 +147,10 @@ export const DishProvider = ({ children }: { children: ReactNode }) => {
 
     // Get Dish/Dishes // Image (READ)
     const getDishes = async (searchTerm: string, sortOrder: number) => {
+        if (loading) {
+            return [];
+        }
+
         try {
             // Assuming `dishes` is an array of dish objects available in the context
             let filteredDishes = dishes;
@@ -207,6 +221,7 @@ export const DishProvider = ({ children }: { children: ReactNode }) => {
 
     // Edit Dish // Image (UPDATE)
     const editDish = async (dish: Partial<Dish>) => {
+        setLoading(true);
         // Convert to formdata here
         let formData = new FormData();
 
@@ -273,11 +288,14 @@ export const DishProvider = ({ children }: { children: ReactNode }) => {
                     data: "An unexpected error occurred.",
                 };
             }
+        } finally {
+            setLoading(false);
         }
     };
 
     // Remove Dish // Image (DELETE)
     const deleteDish = async (id: number): Promise<any> => {
+        setLoading(true);
         try {
             const result = await axios.delete(
                 `${API_URL}/api/dishes/dishes/${id}/`
@@ -304,6 +322,8 @@ export const DishProvider = ({ children }: { children: ReactNode }) => {
                     data: "An unexpected error occurred.",
                 };
             }
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -311,13 +331,63 @@ export const DishProvider = ({ children }: { children: ReactNode }) => {
 
     // Sync Dishes
 
+    // Recommendations
+    const getDishesByIds = (ids: number[]) => {
+        return dishes.filter((dish) => ids.includes(dish.id));
+    };
+
+    const getRecommendations = async () => {
+        try {
+            const result = await axios.get(
+                `${API_URL}/api/dishes/recommendations/`
+            );
+            const favoriteIds = result.data.favorite_dishes.map(
+                (dish: { id: number }) => dish.id
+            );
+            const oldestIds = result.data.oldest_dishes.map(
+                (dish: { id: number }) => dish.id
+            );
+            const quickIds = result.data.quick_dishes.map(
+                (dish: { id: number }) => dish.id
+            );
+
+            const favoriteDishes = getDishesByIds(favoriteIds);
+            const oldestDishes = getDishesByIds(oldestIds);
+            const quickDishes = getDishesByIds(quickIds);
+
+            console.log({ favoriteDishes, oldestDishes, quickDishes });
+
+            return {
+                status: result.status,
+                data: {
+                    favoriteDishes,
+                    oldestDishes,
+                    quickDishes,
+                },
+            };
+        } catch (e) {
+            if (axios.isAxiosError(e) && e.response) {
+                console.log(e.response.data);
+                return {
+                    error: true,
+                    status: e.response.status,
+                    data: e.response.data || "An error occurred.",
+                };
+            } else {
+                return {
+                    error: true,
+                    status: null,
+                    data: "An unexpected error occurred.",
+                };
+            }
+        }
+    };
+
     const { authState } = useAuth();
     useEffect(() => {
         const syncDishes = async () => {
             try {
                 const result = await axios.get(`${API_URL}/api/dishes/dishes/`);
-                console.log(result.status);
-                console.log(result.data);
                 setDishes(result.data);
                 return {
                     status: result.status,
@@ -342,6 +412,7 @@ export const DishProvider = ({ children }: { children: ReactNode }) => {
 
         if (authState?.authenticated) {
             syncDishes();
+            getRecommendations();
         }
     }, [authState]);
 
@@ -353,6 +424,7 @@ export const DishProvider = ({ children }: { children: ReactNode }) => {
         onGetDishes: getDishes,
         onEditDish: editDish,
         onDeleteDish: deleteDish,
+        onGetRecommendations: getRecommendations,
         // syncDishes,
         // clearLocalStorage,
     };
