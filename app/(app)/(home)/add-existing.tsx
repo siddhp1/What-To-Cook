@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-import axios from "axios";
 import { router, useFocusEffect } from "expo-router";
 
 // Components and styles
@@ -14,181 +13,95 @@ import {
 } from "@/components/Styled";
 import { spacing } from "@/constants/Spacing";
 
-// Contexts
-import { useTheme } from "@/contexts/ThemeContext";
-import { API_URL } from "@/contexts/AuthContext";
-
 // Icons
 import { FontAwesome } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
-type Dish = {
-    id: number;
-    name: string;
-    cuisine: string;
-};
+// Contexts
+import { useTheme } from "@/contexts/ThemeContext";
+import { useDishes, Dish } from "@/contexts/DishContext";
 
 export default function SearchScreen() {
     const { theme } = useTheme();
+    const { onGetDishes, onEditDish } = useDishes();
 
     const [dishes, setDishes] = useState<Dish[]>([]);
-    const [page, setPage] = useState(1);
-    const [loading, setLoading] = useState(false);
-    const [hasNextPage, setHasNextPage] = useState(true);
-    const [searchQuery, setSearchQuery] = useState("");
-
+    const [searchQuery, setSearchQuery] = useState<string>("");
     const [sortOrder, setSortOrder] = useState<number>(0);
-    const [ordering, setOrdering] = useState<string>("-date_last_made");
     const [icon, setIcon] = useState<string>("sort-calendar-descending");
 
-    // Refresh the page upon coming back, should be fine
+    // Listen for changes in the sortOrder number, change corresponding icon
+    useEffect(() => {
+        const iconMap: { [key: number]: string } = {
+            0: "sort-calendar-descending",
+            1: "sort-calendar-ascending",
+            2: "sort-alphabetical-ascending-variant",
+            3: "sort-alphabetical-descending-variant",
+            4: "sort-alphabetical-ascending",
+            5: "sort-alphabetical-descending",
+        };
+
+        setIcon(iconMap[sortOrder] || "sort-calendar-descending");
+    }, [sortOrder]);
+
+    // CHECK IF THIS IS NECESSARY
+
+    // Refresh the page upon coming back (see if there is a better way to do this)
     const refreshPage = useCallback(() => {
-        setPage(1);
         getDishes();
     }, []);
+
+    useEffect(() => {
+        getDishes();
+    }, [searchQuery, sortOrder]);
 
     useFocusEffect(
         useCallback(() => {
             refreshPage();
-            return () => {
-                // Optional cleanup if needed
-            };
         }, [refreshPage])
     );
 
-    // Listen for changes in the sortOrder number, change corresponding icon and request param
-    useEffect(() => {
-        switch (sortOrder) {
-            case 0:
-                setOrdering("-date_last_made");
-                setIcon("sort-calendar-descending");
-                break;
-            case 1:
-                setOrdering("date_last_made");
-                setIcon("sort-calendar-ascending");
-                break;
-            case 2:
-                setOrdering("cuisine");
-                setIcon("sort-alphabetical-ascending-variant");
-                break;
-            case 3:
-                setOrdering("-cuisine");
-                setIcon("sort-alphabetical-descending-variant");
-                break;
-            case 4:
-                setOrdering("name");
-                setIcon("sort-alphabetical-ascending");
-                break;
-            case 5:
-                setOrdering("-name");
-                setIcon("sort-alphabetical-descending");
-                break;
-            default:
-                setOrdering("-date_last_made");
-                setIcon("sort-calendar-descending");
-                break;
-        }
-        setPage(1);
-    }, [sortOrder]);
-
-    // Listen to change in ordering or page
-    useEffect(() => {
-        getDishes();
-    }, [page, ordering]);
-
-    // Api request
+    // Context requests
     const getDishes = async () => {
-        setLoading(true);
-
         try {
-            const result = await axios.get(
-                `${API_URL}/api/dishes/dishes/?limited`,
-                {
-                    params: {
-                        page,
-                        search: searchQuery,
-                        ordering: ordering,
-                    },
-                }
-            );
-
-            console.log(result.status);
-
-            if (page === 1) {
-                setDishes(result.data.results);
-            } else {
-                setDishes((prevDishes) => [
-                    ...prevDishes,
-                    ...result.data.results,
-                ]);
-            }
-            setHasNextPage(result.data.next !== null);
-            return {
-                status: result.status,
-            };
+            const dishes = await onGetDishes!(searchQuery, sortOrder);
+            setDishes(dishes);
         } catch (e) {
-            if (axios.isAxiosError(e) && e.response) {
-                console.log(e.response.data);
-                return {
-                    error: true,
-                    status: e.response.status,
-                    data: e.response.data || "An error occurred.",
-                };
-            } else {
-                return {
-                    error: true,
-                    status: null,
-                    data: "An unexpected error occurred.",
-                };
-            }
-        } finally {
-            setLoading(false);
+            console.error("Unexpected error:", e);
+            Alert.alert(
+                "Error",
+                "An unexpected error occurred. Please try again."
+            );
         }
     };
 
-    const updateDate = async (id: string) => {
-        setLoading(true);
-
+    const updateDate = async (dish: Dish) => {
+        const updatedDish = {
+            id: dish.id,
+            date_last_made: new Date().toISOString().slice(0, 10),
+        };
         try {
-            const result = await axios.patch(
-                `${API_URL}/api/dishes/dishes/${id}/`,
-                { date_last_made: new Date().toJSON().slice(0, 10) }
-            );
-            console.log(
-                "here" + result.status + new Date().toJSON().slice(0, 10)
-            );
-            return {
-                status: result.status,
-            };
-        } catch (e) {
-            if (axios.isAxiosError(e) && e.response) {
-                console.log(e.response.data);
-                return {
-                    error: true,
-                    status: e.response.status,
-                    data: e.response.data || "An error occurred.",
-                };
-            } else {
-                return {
-                    error: true,
-                    status: null,
-                    data: "An unexpected error occurred.",
-                };
-            }
-        } finally {
-            setLoading(false);
+            const result = await onEditDish!(updatedDish);
+            console.log(result);
             router.back();
+        } catch (e) {
+            console.error("Unexpected error:", e);
+            Alert.alert(
+                "Error",
+                "An unexpected error occurred. Please try again."
+            );
         }
     };
 
-    const onDishPressed = (id: string) => {
+    // Double checking prompt
+    const onDishPressed = (dish: Dish) => {
         Alert.alert(
             "Update Dish",
             "Did you make this today?",
             [
                 {
                     text: "Yes",
-                    onPress: () => updateDate(id) || (() => {})(),
+                    onPress: () => updateDate(dish) || (() => {})(),
                 },
                 {
                     text: "No",
@@ -201,7 +114,7 @@ export default function SearchScreen() {
 
     return (
         <SafeAreaView>
-            <View style={[styles.searchContainer, spacing.mt4, spacing.mt4]}>
+            <View style={[styles.searchContainer, spacing.mt4, spacing.mb4]}>
                 <TextInput
                     placeholder="Search"
                     autoCapitalize="words"
@@ -210,7 +123,7 @@ export default function SearchScreen() {
                     style={styles.searchInput}
                 />
                 <Pressable
-                    onPress={() => (page == 1 ? getDishes() : setPage(1))}
+                    onPress={() => getDishes()}
                     style={styles.searchButton}
                 >
                     <FontAwesome name="search" size={24} color={theme.c5} />
@@ -230,13 +143,14 @@ export default function SearchScreen() {
                     />
                 </Pressable>
             </View>
+            {/* HAVE TO CONVERT TO FLATLIST LATER FOR PERFORMANCE */}
             <ScrollView>
                 {dishes
                     ? dishes.map((dish: Dish, index: number) => (
                           <Pressable
                               key={index}
-                              onPress={() => onDishPressed(dish.id.toString())}
-                              style={[styles.dishButton, spacing.mt4]}
+                              onPress={() => onDishPressed(dish)}
+                              style={[styles.dishButton, spacing.mb4]}
                           >
                               <SansSerifText size="h3">
                                   {dish.name}
@@ -247,23 +161,6 @@ export default function SearchScreen() {
                           </Pressable>
                       ))
                     : null}
-
-                {loading && <SansSerifText size="h3">Loading...</SansSerifText>}
-
-                {dishes.length == 0 && (
-                    <SansSerifText size="h3">No Dishes Found.</SansSerifText>
-                )}
-
-                {hasNextPage && !loading && (
-                    <Pressable
-                        onPress={() => setPage((prevPage) => prevPage + 1)}
-                        style={spacing.mt4}
-                    >
-                        <SansSerifText size="h2" style={{ color: theme.c5 }}>
-                            Load More
-                        </SansSerifText>
-                    </Pressable>
-                )}
             </ScrollView>
         </SafeAreaView>
     );

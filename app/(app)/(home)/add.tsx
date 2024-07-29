@@ -1,5 +1,4 @@
 import { useState } from "react";
-import axios from "axios";
 import { router } from "expo-router";
 
 // Components and styles
@@ -21,19 +20,19 @@ import { spacing } from "@/constants/Spacing";
 import { FontAwesome6 } from "@expo/vector-icons";
 
 // Contexts
-import { API_URL } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useDishes } from "@/contexts/DishContext";
 
 export default function AddScreen() {
     const { theme } = useTheme();
+    const { onAddDish } = useDishes();
 
-    const [name, setName] = useState("");
+    const [name, setName] = useState<string>("");
     const [image, setImage] = useState<string | null>(null);
-    const [cuisine, setCuisine] = useState("");
+    const [cuisine, setCuisine] = useState<string>("");
     const [rating, setRating] = useState<number>(0);
     const [timeToMake, setTimeToMake] = useState<number>(0);
 
-    // Api request
     const createDish = async () => {
         // Check that fields are filled
         if (!name || !image || !cuisine || !rating || !timeToMake) {
@@ -41,57 +40,24 @@ export default function AddScreen() {
             return;
         }
 
-        // Create formdata object
-        let formData = new FormData();
-
-        // Append data
-        formData.append("name", name);
-        formData.append("cuisine", cuisine);
-        if (rating < 1) {
-            setRating(2);
-        }
-        formData.append("rating", (rating * 2).toString());
-        if (timeToMake < 1) {
-            setTimeToMake(1);
-        }
-        formData.append("time_to_make", timeToMake.toString());
-        formData.append("date_last_made", new Date().toJSON().slice(0, 10)); // TypeScript compatibility
-
-        // Append image
-        const uriParts = image.split(".");
-        const fileType = uriParts[uriParts.length - 1];
-        const fileName = `photo.${fileType}`;
-        formData.append("image", {
-            uri: image,
-            name: fileName,
-            type: `image/${fileType}`,
-        } as any); // TypeScript compatibility
+        const newDish = {
+            name: name,
+            image: image,
+            cuisine: cuisine,
+            rating: rating,
+            time_to_make: timeToMake,
+        };
 
         try {
-            const result = await axios.post(
-                `${API_URL}/api/dishes/dishes/`,
-                formData
-            );
+            const result = await onAddDish!(newDish);
             console.log(result.status);
             router.back();
-            return {
-                status: result.status,
-            };
         } catch (e) {
-            if (axios.isAxiosError(e) && e.response) {
-                console.log(e.response.data);
-                return {
-                    error: true,
-                    status: e.response.status,
-                    data: e.response.data || "An error occurred.",
-                };
-            } else {
-                return {
-                    error: true,
-                    status: null,
-                    data: "An unexpected error occurred.",
-                };
-            }
+            console.error("Unexpected error:", e);
+            Alert.alert(
+                "Error",
+                "An unexpected error occurred. Please try again."
+            );
         }
     };
 
@@ -171,7 +137,7 @@ export default function AddScreen() {
                 </View>
                 <Pressable
                     onPress={createDish}
-                    style={[spacing.mt4, spacing.mt4]}
+                    style={[spacing.mt4, spacing.mb4]}
                 >
                     <SansSerifText size="h2" style={{ color: theme.c5 }}>
                         Add Dish

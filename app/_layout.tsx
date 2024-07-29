@@ -11,6 +11,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { DishProvider } from "@/contexts/DishContext";
 
 export {
     // Catch any errors thrown by the Layout component.
@@ -53,7 +54,9 @@ export default function RootLayout() {
         <ThemeProvider>
             <SafeAreaProvider>
                 <AuthProvider>
-                    <Slot />
+                    <DishProvider>
+                        <Slot />
+                    </DishProvider>
                 </AuthProvider>
             </SafeAreaProvider>
         </ThemeProvider>
