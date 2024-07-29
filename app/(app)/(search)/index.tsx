@@ -2,14 +2,13 @@ import { useCallback, useEffect, useState } from "react";
 import { router, useFocusEffect } from "expo-router";
 
 // Components and styles
-import { Alert, StyleSheet } from "react-native";
+import { Alert, FlatList, StyleSheet } from "react-native";
 import {
     Image,
     Pressable,
     SerifText,
     SansSerifText,
     SafeAreaView,
-    ScrollView,
     TextInput,
     View,
 } from "@/components/Styled";
@@ -110,49 +109,48 @@ export default function SearchScreen() {
                     />
                 </Pressable>
             </View>
-            {/* HAVE TO CONVERT TO FLATLIST LATER FOR PERFORMANCE */}
-            <ScrollView>
-                {dishes
-                    ? dishes.map((dish: Dish, index: number) => (
-                          <Pressable
-                              style={[styles.dishContainer, spacing.mb4]}
-                              key={index}
-                              onPress={() => router.push(`/dish/${dish.id}`)}
-                          >
-                              <Image style={styles.image} source={dish.image} />
-                              <View style={styles.detailContainer}>
-                                  <SerifText size="h3">{dish.name}</SerifText>
-                                  <SansSerifText size="h4">
-                                      {dish.cuisine}
-                                  </SansSerifText>
-                                  <View style={styles.rowContainer}>
-                                      <View style={styles.ratingContainer}>
-                                          <SansSerifText size="h4">
-                                              {dish.rating / 2}
-                                          </SansSerifText>
-                                          <StarIcon
-                                              index={0}
-                                              type="full"
-                                              size={28}
-                                              color={theme.c6}
-                                          />
-                                      </View>
-                                      <View style={styles.ratingContainer}>
-                                          <SansSerifText size="h4">
-                                              {dish.time_to_make}
-                                          </SansSerifText>
-                                          <FontAwesome6
-                                              name="clock"
-                                              size={24}
-                                              color={theme.c4}
-                                          />
-                                      </View>
-                                  </View>
-                              </View>
-                          </Pressable>
-                      ))
-                    : null}
-            </ScrollView>
+            <FlatList
+                data={dishes}
+                style={[styles.dishListContainer, spacing.mt2, spacing.mb2]}
+                renderItem={({ item }) => (
+                    <Pressable
+                        style={[styles.dishContainer, spacing.mb4]}
+                        onPress={() => router.push(`/dish/${item.id}`)}
+                    >
+                        <Image style={styles.image} source={item.image} />
+                        <View style={styles.detailContainer}>
+                            <SerifText size="h3">{item.name}</SerifText>
+                            <SansSerifText size="h4">
+                                {item.cuisine}
+                            </SansSerifText>
+                            <View style={styles.rowContainer}>
+                                <View style={styles.ratingContainer}>
+                                    <SansSerifText size="h4">
+                                        {item.rating / 2}
+                                    </SansSerifText>
+                                    <StarIcon
+                                        index={0}
+                                        type="full"
+                                        size={28}
+                                        color={theme.c6}
+                                    />
+                                </View>
+                                <View style={styles.ratingContainer}>
+                                    <SansSerifText size="h4">
+                                        {item.time_to_make}
+                                    </SansSerifText>
+                                    <FontAwesome6
+                                        name="clock"
+                                        size={24}
+                                        color={theme.c4}
+                                    />
+                                </View>
+                            </View>
+                        </View>
+                    </Pressable>
+                )}
+                keyExtractor={(item) => item.id.toString()}
+            />
         </SafeAreaView>
     );
 }
@@ -168,6 +166,10 @@ const styles = StyleSheet.create({
     },
     searchInput: {
         minWidth: "52%",
+    },
+    dishListContainer: {
+        minWidth: "88%",
+        paddingHorizontal: "4%",
     },
     dishContainer: {
         flexDirection: "row",

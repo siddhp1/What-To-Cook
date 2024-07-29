@@ -2,12 +2,11 @@ import { useCallback, useEffect, useState } from "react";
 import { router, useFocusEffect } from "expo-router";
 
 // Components and styles
-import { Alert, StyleSheet } from "react-native";
+import { Alert, FlatList, StyleSheet } from "react-native";
 import {
     Pressable,
     SansSerifText,
     SafeAreaView,
-    ScrollView,
     TextInput,
     View,
 } from "@/components/Styled";
@@ -143,25 +142,20 @@ export default function SearchScreen() {
                     />
                 </Pressable>
             </View>
-            {/* HAVE TO CONVERT TO FLATLIST LATER FOR PERFORMANCE */}
-            <ScrollView>
-                {dishes
-                    ? dishes.map((dish: Dish, index: number) => (
-                          <Pressable
-                              key={index}
-                              onPress={() => onDishPressed(dish)}
-                              style={[styles.dishButton, spacing.mb4]}
-                          >
-                              <SansSerifText size="h3">
-                                  {dish.name}
-                              </SansSerifText>
-                              <SansSerifText size="h4">
-                                  {dish.cuisine}
-                              </SansSerifText>
-                          </Pressable>
-                      ))
-                    : null}
-            </ScrollView>
+            <FlatList
+                data={dishes}
+                style={[styles.dishListContainer, spacing.mt2, spacing.mb2]}
+                renderItem={({ item }) => (
+                    <Pressable
+                        onPress={() => onDishPressed(item)}
+                        style={[styles.dishButton, spacing.mb4]}
+                    >
+                        <SansSerifText size="h3">{item.name}</SansSerifText>
+                        <SansSerifText size="h4">{item.cuisine}</SansSerifText>
+                    </Pressable>
+                )}
+                keyExtractor={(item) => item.id.toString()}
+            />
         </SafeAreaView>
     );
 }
@@ -178,8 +172,13 @@ const styles = StyleSheet.create({
     searchInput: {
         minWidth: "52%",
     },
+    dishListContainer: {
+        minWidth: "88%",
+        paddingHorizontal: "4%",
+    },
     dishButton: {
         flexDirection: "row",
         justifyContent: "space-between",
+        paddingVertical: "4%",
     },
 });
