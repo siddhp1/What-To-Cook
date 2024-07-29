@@ -6,7 +6,6 @@ import React, {
     ReactNode,
 } from "react";
 import axios from "axios";
-import * as FileSystem from "expo-file-system";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { useAuth } from "./AuthContext";
@@ -22,72 +21,49 @@ export type Dish = {
 };
 
 interface DishProps {
-    dishes?: Dish[];
     loading?: boolean;
-
-    // Add functions here
-    onAddDish?: (
-        name: string,
-        cuisine: string,
-        rating: number,
-        time_to_make: number,
-        image: string
-    ) => Promise<any>;
+    onAddDish?: (dish: Partial<Dish>) => Promise<any>;
     onGetDish?: (id: number) => Promise<Dish | null>;
     onGetDishes?: (searchTerm: string, sortOrder: number) => Promise<Dish[]>;
     onEditDish?: (dish: Partial<Dish>) => Promise<any>;
     onDeleteDish?: (id: number) => Promise<any>;
-    onGetRecommendations?: () => Promise<any>; // fix this after
+    onGetRecommendations?: () => Promise<any>;
+    onSyncDishes?: () => Promise<any>;
 }
 
 const DISHES_KEY = "@dishes";
-const IMAGE_DIR = FileSystem.documentDirectory + "images/";
 import { API_URL } from "./AuthContext";
 
 const DishContext = createContext<DishProps>({});
 
 export const DishProvider = ({ children }: { children: ReactNode }) => {
-    const [dishes, setDishes] = useState<Dish[]>([]);
+    const { authState } = useAuth();
+
     const [loading, setLoading] = useState<boolean>(false);
 
     // Add Dish // Image (CREATE)
-
-    useEffect(() => {
-        console.log(dishes);
-        console.log("CHGNED DIDSEHS");
-    }, [dishes]);
-
-    // MAYBE CONVERT THIS INTO PASSING IN ONE PARTIAL DISH
-    const addDish = async (
-        name: string,
-        cuisine: string,
-        rating: number,
-        timeToMake: number,
-        image: string
-    ) => {
+    const addDish = async (dish: Partial<Dish>) => {
         setLoading(true);
 
         let formData = new FormData();
-
-        // Append data
-        formData.append("name", name);
-        formData.append("cuisine", cuisine);
-        if (rating < 1) {
-            rating = 2;
-        }
-        formData.append("rating", (rating * 2).toString());
-        if (timeToMake < 1) {
-            timeToMake = 1;
-        }
-        formData.append("time_to_make", timeToMake.toString());
+        formData.append("name", dish.name!);
+        formData.append("cuisine", dish.cuisine!);
+        formData.append(
+            "rating",
+            (dish.rating! < 1 ? 2 : dish.rating! * 2).toString()
+        );
+        formData.append(
+            "time_to_make",
+            (dish.time_to_make! < 1 ? 1 : dish.time_to_make!).toString()
+        );
         formData.append("date_last_made", new Date().toJSON().slice(0, 10));
 
-        // Append image
-        const uriParts = image.split(".");
+        // Image
+        const uriParts = dish.image!.split(".");
         const fileType = uriParts[uriParts.length - 1];
         const fileName = `photo.${fileType}`;
         formData.append("image", {
-            uri: image,
+            uri: dish.image!,
             name: fileName,
             type: `image/${fileType}`,
         } as any);
@@ -97,7 +73,6 @@ export const DishProvider = ({ children }: { children: ReactNode }) => {
                 `${API_URL}/api/dishes/dishes/`,
                 formData
             );
-
             const {
                 id,
                 name,
@@ -108,6 +83,9 @@ export const DishProvider = ({ children }: { children: ReactNode }) => {
                 image,
             } = result.data;
 
+            // THIS CAN PROBABLY BE CONDENSED
+
+            // Add dish to context and local storage
             const newDish: Dish = {
                 id,
                 name,
@@ -118,8 +96,16 @@ export const DishProvider = ({ children }: { children: ReactNode }) => {
                 image,
             };
 
-            // add to context
-            setDishes([...dishes, newDish]);
+            // Add to local storage
+            const storedDishesJson = await AsyncStorage.getItem(DISHES_KEY);
+            const currentDishes = storedDishesJson
+                ? JSON.parse(storedDishesJson)
+                : [];
+            const updatedDishes = [...currentDishes, newDish];
+            await AsyncStorage.setItem(
+                DISHES_KEY,
+                JSON.stringify(updatedDishes)
+            );
             return {
                 status: result.status,
             };
@@ -140,9 +126,6 @@ export const DishProvider = ({ children }: { children: ReactNode }) => {
         } finally {
             setLoading(false);
         }
-
-        // Add to local storage
-        // Add image to file system
     };
 
     // Get Dish/Dishes // Image (READ)
@@ -152,8 +135,13 @@ export const DishProvider = ({ children }: { children: ReactNode }) => {
         }
 
         try {
-            // Assuming `dishes` is an array of dish objects available in the context
-            let filteredDishes = dishes;
+            // Retrieve dishes from AsyncStorage
+            const storedDishesJson = await AsyncStorage.getItem(DISHES_KEY);
+            const storedDishes: Dish[] = storedDishesJson
+                ? JSON.parse(storedDishesJson)
+                : [];
+
+            let filteredDishes = storedDishes;
 
             // Filter dishes based on searchTerm
             if (searchTerm) {
@@ -212,20 +200,27 @@ export const DishProvider = ({ children }: { children: ReactNode }) => {
         }
     };
     const getDish = async (id: number): Promise<Dish | null> => {
-        if (!dishes || dishes.length === 0) {
+        try {
+            // Retrieve dishes from AsyncStorage
+            const storedDishesJson = await AsyncStorage.getItem(DISHES_KEY);
+            const storedDishes: Dish[] = storedDishesJson
+                ? JSON.parse(storedDishesJson)
+                : [];
+
+            // Find the dish with the given id
+            const dish = storedDishes.find((dish) => dish.id === id);
+            return dish || null;
+        } catch (error) {
+            console.error("Error retrieving dish:", error);
             return null;
         }
-        const dish = dishes.find((dish) => dish.id === id);
-        return dish || null;
     };
 
     // Edit Dish // Image (UPDATE)
     const editDish = async (dish: Partial<Dish>) => {
         setLoading(true);
-        // Convert to formdata here
-        let formData = new FormData();
 
-        // Append data
+        let formData = new FormData();
         if (dish.name) formData.append("name", dish.name);
         if (dish.cuisine) formData.append("cuisine", dish.cuisine);
         if (dish.rating !== undefined) {
@@ -263,12 +258,20 @@ export const DishProvider = ({ children }: { children: ReactNode }) => {
                 formData
             );
 
-            // Update local context
-            const updatedDish = result.data;
-            setDishes((prevDishes: Dish[]) =>
-                prevDishes.map((d) =>
-                    d.id === updatedDish.id ? updatedDish : d
-                )
+            // Get updated dish from server response
+            const updatedDish: Dish = result.data;
+
+            // Update local storage
+            const storedDishesJson = await AsyncStorage.getItem(DISHES_KEY);
+            const storedDishes: Dish[] = storedDishesJson
+                ? JSON.parse(storedDishesJson)
+                : [];
+            const updatedDishes = storedDishes.map((d) =>
+                d.id === updatedDish.id ? updatedDish : d
+            );
+            await AsyncStorage.setItem(
+                DISHES_KEY,
+                JSON.stringify(updatedDishes)
             );
 
             return {
@@ -300,10 +303,20 @@ export const DishProvider = ({ children }: { children: ReactNode }) => {
             const result = await axios.delete(
                 `${API_URL}/api/dishes/dishes/${id}/`
             );
-            console.log(result.data);
-            setDishes((prevDishes) =>
-                prevDishes.filter((dish) => dish.id !== id)
-            );
+
+            // Remove dish from AsyncStorage
+            const storedDishesJson = await AsyncStorage.getItem(DISHES_KEY);
+            if (storedDishesJson) {
+                const storedDishes: Dish[] = JSON.parse(storedDishesJson);
+                const updatedDishes = storedDishes.filter(
+                    (dish) => dish.id !== id
+                );
+                await AsyncStorage.setItem(
+                    DISHES_KEY,
+                    JSON.stringify(updatedDishes)
+                );
+            }
+
             return {
                 status: result.status,
             };
@@ -327,13 +340,23 @@ export const DishProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
-    // Clear local storage
-
-    // Sync Dishes
-
     // Recommendations
-    const getDishesByIds = (ids: number[]) => {
-        return dishes.filter((dish) => ids.includes(dish.id));
+    const getDishesByIds = async (ids: number[]): Promise<Dish[]> => {
+        try {
+            // Retrieve stored dishes from AsyncStorage
+            const storedDishesJson = await AsyncStorage.getItem(DISHES_KEY);
+            if (!storedDishesJson) {
+                return [];
+            }
+
+            const storedDishes: Dish[] = JSON.parse(storedDishesJson);
+
+            // Filter dishes based on provided IDs
+            return storedDishes.filter((dish) => ids.includes(dish.id));
+        } catch (error) {
+            console.error("Error retrieving dishes from AsyncStorage:", error);
+            return [];
+        }
     };
 
     const getRecommendations = async () => {
@@ -351,11 +374,9 @@ export const DishProvider = ({ children }: { children: ReactNode }) => {
                 (dish: { id: number }) => dish.id
             );
 
-            const favoriteDishes = getDishesByIds(favoriteIds);
-            const oldestDishes = getDishesByIds(oldestIds);
-            const quickDishes = getDishesByIds(quickIds);
-
-            console.log({ favoriteDishes, oldestDishes, quickDishes });
+            const favoriteDishes = await getDishesByIds(favoriteIds);
+            const oldestDishes = await getDishesByIds(oldestIds);
+            const quickDishes = await getDishesByIds(quickIds);
 
             return {
                 status: result.status,
@@ -383,41 +404,109 @@ export const DishProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
-    const { authState } = useAuth();
-    useEffect(() => {
-        const syncDishes = async () => {
-            try {
-                const result = await axios.get(`${API_URL}/api/dishes/dishes/`);
-                setDishes(result.data);
-                return {
-                    status: result.status,
-                };
-            } catch (e) {
-                if (axios.isAxiosError(e) && e.response) {
-                    console.log(e.response.data);
-                    return {
-                        error: true,
-                        status: e.response.status,
-                        data: e.response.data || "An error occurred.",
-                    };
-                } else {
-                    return {
-                        error: true,
-                        status: null,
-                        data: "An unexpected error occurred.",
-                    };
-                }
-            }
-        };
+    // Syncing
+    const syncDishes = async () => {
+        try {
+            // Fetch latest data from the server
+            const result = await axios.get(`${API_URL}/api/dishes/dishes/`);
+            const serverDishes: Dish[] = result.data;
 
+            // Retrieve existing data from local storage
+            const storedDishesJson = await AsyncStorage.getItem(DISHES_KEY);
+            let localDishes: Dish[] = [];
+            if (storedDishesJson) {
+                localDishes = JSON.parse(storedDishesJson);
+            }
+
+            // Compare server data with local data
+            const localDishIds = localDishes.map((dish) => dish.id);
+            const serverDishIds = serverDishes.map((dish) => dish.id);
+
+            // Find dishes that are in the server but not in local storage
+            const dishesToAdd = serverDishes.filter(
+                (dish) => !localDishIds.includes(dish.id)
+            );
+
+            // Find dishes that are in local storage but not in the server
+            const dishesToRemove = localDishes.filter(
+                (dish) => !serverDishIds.includes(dish.id)
+            );
+
+            // Find dishes that are in both but need updating
+            const dishesToUpdate = serverDishes.filter((dish) => {
+                const localDish = localDishes.find((d) => d.id === dish.id);
+                return (
+                    localDish &&
+                    JSON.stringify(localDish) !== JSON.stringify(dish)
+                );
+            });
+
+            // Update local storage to match server data
+            // Add new dishes
+            if (dishesToAdd.length > 0) {
+                const updatedLocalDishes = [...localDishes, ...dishesToAdd];
+                await AsyncStorage.setItem(
+                    DISHES_KEY,
+                    JSON.stringify(updatedLocalDishes)
+                );
+            }
+
+            // Remove dishes
+            if (dishesToRemove.length > 0) {
+                const updatedLocalDishes = localDishes.filter(
+                    (dish) => !dishesToRemove.some((d) => d.id === dish.id)
+                );
+                await AsyncStorage.setItem(
+                    DISHES_KEY,
+                    JSON.stringify(updatedLocalDishes)
+                );
+            }
+
+            // Update dishes
+            if (dishesToUpdate.length > 0) {
+                const updatedLocalDishes = localDishes.map((dish) => {
+                    const updatedDish = dishesToUpdate.find(
+                        (d) => d.id === dish.id
+                    );
+                    return updatedDish ? updatedDish : dish;
+                });
+                await AsyncStorage.setItem(
+                    DISHES_KEY,
+                    JSON.stringify(updatedLocalDishes)
+                );
+            }
+
+            // Fetch recommendations after syncing
+            await getRecommendations();
+
+            return {
+                status: result.status,
+            };
+        } catch (e) {
+            if (axios.isAxiosError(e) && e.response) {
+                console.log(e.response.data);
+                return {
+                    error: true,
+                    status: e.response.status,
+                    data: e.response.data || "An error occurred.",
+                };
+            } else {
+                return {
+                    error: true,
+                    status: null,
+                    data: "An unexpected error occurred.",
+                };
+            }
+        }
+    };
+
+    useEffect(() => {
         if (authState?.authenticated) {
             syncDishes();
-            getRecommendations();
         }
     }, [authState]);
 
     const value = {
-        dishes,
         loading,
         onAddDish: addDish,
         onGetDish: getDish,
@@ -425,8 +514,7 @@ export const DishProvider = ({ children }: { children: ReactNode }) => {
         onEditDish: editDish,
         onDeleteDish: deleteDish,
         onGetRecommendations: getRecommendations,
-        // syncDishes,
-        // clearLocalStorage,
+        onSyncDishes: syncDishes,
     };
 
     return (
