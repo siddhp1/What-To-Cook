@@ -39,14 +39,17 @@ export default function AddScreen() {
             Alert.alert("Error", "Please fill out all fields");
             return;
         }
+
+        const newDish = {
+            name: name,
+            image: image,
+            cuisine: cuisine,
+            rating: rating,
+            time_to_make: timeToMake,
+        };
+
         try {
-            const result = await onAddDish!(
-                name,
-                cuisine,
-                rating,
-                timeToMake,
-                image
-            );
+            const result = await onAddDish!(newDish);
             console.log(result.status);
             router.back();
         } catch (e) {
@@ -134,7 +137,7 @@ export default function AddScreen() {
                 </View>
                 <Pressable
                     onPress={createDish}
-                    style={[spacing.mt4, spacing.mt4]}
+                    style={[spacing.mt4, spacing.mb4]}
                 >
                     <SansSerifText size="h2" style={{ color: theme.c5 }}>
                         Add Dish
