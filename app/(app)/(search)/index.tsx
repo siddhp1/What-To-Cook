@@ -80,7 +80,7 @@ export default function SearchScreen() {
 
     return (
         <SafeAreaView>
-            <View style={[styles.searchContainer, spacing.mb4]}>
+            <View style={[styles.searchContainer, spacing.mb2]}>
                 <TextInput
                     placeholder="Search"
                     autoCapitalize="words"
@@ -89,18 +89,12 @@ export default function SearchScreen() {
                     style={styles.searchInput}
                 />
                 <Pressable
-                    onPress={() => getDishes()}
-                    style={styles.searchButton}
-                >
-                    <FontAwesome name="search" size={24} color={theme.c5} />
-                </Pressable>
-                <Pressable
                     onPress={() =>
                         sortOrder < 5
                             ? setSortOrder(sortOrder + 1)
                             : setSortOrder(0)
                     }
-                    style={styles.searchButton}
+                    style={styles.orderButton}
                 >
                     <MaterialCommunityIcons
                         name={icon as any}
@@ -161,11 +155,11 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         minWidth: "80%",
     },
-    searchButton: {
-        minWidth: 0,
-    },
     searchInput: {
-        minWidth: "52%",
+        minWidth: "65%",
+    },
+    orderButton: {
+        minWidth: 0,
     },
     dishListContainer: {
         minWidth: "88%",
