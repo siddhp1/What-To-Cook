@@ -3,7 +3,12 @@ import { Link, router } from "expo-router";
 import zxcvbn from "zxcvbn";
 
 // Components and styles
-import { Alert, StyleSheet } from "react-native";
+import {
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    StyleSheet,
+} from "react-native";
 import {
     Pressable,
     SerifText,
@@ -129,60 +134,70 @@ export default function RegisterScreen() {
                 justifyContent: "center",
             }}
         >
-            <SerifText size="h1">What to Cook</SerifText>
-            <TextInput
-                placeholder="Email"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoComplete="email"
-                autoCorrect={false}
-                onChangeText={(text: string) => setEmail(text)}
-                style={spacing.mt4}
-            />
-            <View style={[styles.splitInputContainer, spacing.mt4]}>
+            <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+            >
+                <SerifText size="h1">What to Cook</SerifText>
                 <TextInput
-                    placeholder="First Name"
-                    autoCapitalize="words"
-                    autoComplete="given-name"
+                    placeholder="Email"
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoComplete="email"
                     autoCorrect={false}
-                    onChangeText={(text: string) => setFirstName(text)}
-                    style={styles.splitInput}
+                    onChangeText={(text: string) => setEmail(text)}
+                    style={spacing.mt4}
+                />
+                <View style={[styles.splitInputContainer, spacing.mt4]}>
+                    <TextInput
+                        placeholder="First Name"
+                        autoCapitalize="words"
+                        autoComplete="given-name"
+                        autoCorrect={false}
+                        onChangeText={(text: string) => setFirstName(text)}
+                        style={styles.splitInput}
+                    />
+                    <TextInput
+                        placeholder="Last Name"
+                        autoCapitalize="words"
+                        autoComplete="family-name"
+                        autoCorrect={false}
+                        onChangeText={(text: string) => setLastName(text)}
+                        style={styles.splitInput}
+                    />
+                </View>
+                <TextInput
+                    placeholder="Password"
+                    secureTextEntry={true}
+                    onChangeText={(text: string) => setPassword(text)}
+                    style={spacing.mt4}
                 />
                 <TextInput
-                    placeholder="Last Name"
-                    autoCapitalize="words"
-                    autoComplete="family-name"
-                    autoCorrect={false}
-                    onChangeText={(text: string) => setLastName(text)}
-                    style={styles.splitInput}
+                    placeholder="Confirm Password"
+                    secureTextEntry={true}
+                    onChangeText={(text: string) => setConfirmPassword(text)}
+                    style={spacing.mt4}
                 />
-            </View>
-            <TextInput
-                placeholder="Password"
-                secureTextEntry={true}
-                onChangeText={(text: string) => setPassword(text)}
-                style={spacing.mt4}
-            />
-            <TextInput
-                placeholder="Confirm Password"
-                secureTextEntry={true}
-                onChangeText={(text: string) => setConfirmPassword(text)}
-                style={spacing.mt4}
-            />
-            <Pressable onPress={register} style={spacing.mt4}>
-                <SansSerifText size="h2" style={{ color: theme.c5 }}>
-                    Sign Up
-                </SansSerifText>
-            </Pressable>
-
-            <View style={[spacing.mt4, styles.loginLinkContainer]}>
-                <SansSerifText size="h3">Have an account?</SansSerifText>
-                <Link replace href="/">
+                <Pressable onPress={register} style={spacing.mt4}>
                     <SansSerifText size="h2" style={{ color: theme.c5 }}>
-                        Login
+                        Sign Up
                     </SansSerifText>
-                </Link>
-            </View>
+                </Pressable>
+
+                <View
+                    style={[
+                        styles.loginLinkContainer,
+                        spacing.mt4,
+                        spacing.mb4,
+                    ]}
+                >
+                    <SansSerifText size="h3">Have an account?</SansSerifText>
+                    <Link replace href="/">
+                        <SansSerifText size="h2" style={{ color: theme.c5 }}>
+                            Login
+                        </SansSerifText>
+                    </Link>
+                </View>
+            </KeyboardAvoidingView>
         </SafeAreaView>
     );
 }

@@ -5,6 +5,8 @@ import { useNavigation, useLocalSearchParams } from "expo-router";
 import {
     Alert,
     Dimensions,
+    KeyboardAvoidingView,
+    Platform,
     StyleSheet,
     Pressable as DefaultPressable,
 } from "react-native";
@@ -154,168 +156,180 @@ export default function DishScreen() {
 
     return (
         <SafeAreaView>
-            <ScrollView>
-                {viewMode ? (
-                    <>
-                        <View>
-                            <SerifText size="h2">{name}</SerifText>
-                        </View>
-                        {image && (
-                            <Image
-                                style={styles.image}
-                                source={{ uri: image }}
-                            />
-                        )}
-                        <View style={[styles.attributeContainer, spacing.mt4]}>
-                            <SansSerifText size="h3">
-                                Cuisine: {cuisine}
-                            </SansSerifText>
-                        </View>
-                        <View style={[styles.attributeContainer, spacing.mt4]}>
-                            <SansSerifText size="h3">
-                                Last Made: {dateLastMade}
-                            </SansSerifText>
-                        </View>
-                        <View style={[styles.attributeContainer, spacing.mt4]}>
+            <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+            >
+                <ScrollView>
+                    {viewMode ? (
+                        <>
+                            <View>
+                                <SerifText size="h2">{name}</SerifText>
+                            </View>
+                            {image && (
+                                <Image
+                                    style={styles.image}
+                                    source={{ uri: image }}
+                                />
+                            )}
+                            <View
+                                style={[styles.attributeContainer, spacing.mt4]}
+                            >
+                                <SansSerifText size="h3">
+                                    Cuisine: {cuisine}
+                                </SansSerifText>
+                            </View>
+                            <View
+                                style={[styles.attributeContainer, spacing.mt4]}
+                            >
+                                <SansSerifText size="h3">
+                                    Last Made: {dateLastMade}
+                                </SansSerifText>
+                            </View>
+                            <View
+                                style={[styles.attributeContainer, spacing.mt4]}
+                            >
+                                <SansSerifText
+                                    size="h3"
+                                    style={styles.attributeText}
+                                >
+                                    Rating: {rating}
+                                </SansSerifText>
+                                <StarIcon
+                                    index={0}
+                                    type="full"
+                                    size={28}
+                                    color={theme.c6}
+                                />
+                            </View>
+                            <View
+                                style={[
+                                    styles.attributeContainer,
+                                    spacing.mt4,
+                                    spacing.mb4,
+                                ]}
+                            >
+                                <SansSerifText
+                                    size="h3"
+                                    style={styles.attributeText}
+                                >
+                                    Time to Make: {timeToMake}
+                                </SansSerifText>
+                                <FontAwesome6
+                                    name="clock"
+                                    size={24}
+                                    color={theme.c4}
+                                />
+                            </View>
+                        </>
+                    ) : (
+                        <>
                             <SansSerifText
                                 size="h3"
-                                style={styles.attributeText}
+                                style={[spacing.mt2, spacing.mb1]}
                             >
-                                Rating: {rating}
+                                Name
                             </SansSerifText>
-                            <StarIcon
-                                index={0}
-                                type="full"
-                                size={28}
-                                color={theme.c6}
+                            <TextInput
+                                value={name}
+                                autoCapitalize="words"
+                                autoCorrect={false}
+                                onChangeText={(text: string) => setName(text)}
                             />
-                        </View>
-                        <View
-                            style={[
-                                styles.attributeContainer,
-                                spacing.mt4,
-                                spacing.mb4,
-                            ]}
-                        >
+                            {image && (
+                                <Pressable
+                                    style={[styles.imageButton, spacing.mt4]}
+                                    onPress={imagePickerHandler}
+                                >
+                                    <View style={styles.imageContainer}>
+                                        <Image
+                                            style={styles.image}
+                                            source={{ uri: image }}
+                                        />
+                                        <View
+                                            style={[
+                                                styles.imageOverlay,
+                                                styles.image,
+                                            ]}
+                                        />
+                                        <FontAwesome6
+                                            name="edit"
+                                            size={48}
+                                            color={theme.c5}
+                                            style={styles.imageEditIcon}
+                                        />
+                                    </View>
+                                </Pressable>
+                            )}
                             <SansSerifText
                                 size="h3"
-                                style={styles.attributeText}
+                                style={[spacing.mt2, spacing.mb1]}
                             >
-                                Time to Make: {timeToMake}
+                                Cuisine
                             </SansSerifText>
-                            <FontAwesome6
-                                name="clock"
-                                size={24}
-                                color={theme.c4}
+                            <TextInput
+                                value={cuisine}
+                                autoCapitalize="words"
+                                autoCorrect={false}
+                                onChangeText={(text: string) =>
+                                    setCuisine(text)
+                                }
                             />
-                        </View>
-                    </>
-                ) : (
-                    <>
-                        <SansSerifText
-                            size="h3"
-                            style={[spacing.mt2, spacing.mb1]}
-                        >
-                            Name
-                        </SansSerifText>
-                        <TextInput
-                            value={name}
-                            autoCapitalize="words"
-                            autoCorrect={false}
-                            onChangeText={(text: string) => setName(text)}
-                        />
-                        {image && (
+                            <View
+                                style={[
+                                    styles.ratingContainer,
+                                    spacing.mt4,
+                                    { backgroundColor: theme.c2 },
+                                ]}
+                            >
+                                <SansSerifText size="h3">Rating</SansSerifText>
+                                <StarRating
+                                    rating={rating}
+                                    onChange={setRating}
+                                    color={theme.c6}
+                                />
+                            </View>
+                            <View
+                                style={[
+                                    styles.ratingContainer,
+                                    spacing.mt4,
+                                    { backgroundColor: theme.c2 },
+                                ]}
+                            >
+                                <SansSerifText size="h3">
+                                    Time to Make
+                                </SansSerifText>
+                                <StarRating
+                                    rating={timeToMake}
+                                    onChange={setTimeToMake}
+                                    enableHalfStar={false}
+                                    color={theme.c4}
+                                    emptyColor={theme.c3}
+                                    StarIconComponent={({ color }) => (
+                                        <FontAwesome6
+                                            name="clock"
+                                            size={28}
+                                            color={color}
+                                        />
+                                    )}
+                                    style={styles.starRatingStyle}
+                                    starStyle={styles.starStyle}
+                                />
+                            </View>
                             <Pressable
-                                style={[styles.imageButton, spacing.mt4]}
-                                onPress={imagePickerHandler}
+                                onPress={deleteDish}
+                                style={[spacing.mt4, spacing.mb4]}
                             >
-                                <View style={styles.imageContainer}>
-                                    <Image
-                                        style={styles.image}
-                                        source={{ uri: image }}
-                                    />
-                                    <View
-                                        style={[
-                                            styles.imageOverlay,
-                                            styles.image,
-                                        ]}
-                                    />
-                                    <FontAwesome6
-                                        name="edit"
-                                        size={48}
-                                        color={theme.c5}
-                                        style={styles.imageEditIcon}
-                                    />
-                                </View>
+                                <SansSerifText
+                                    size="h3"
+                                    style={{ color: theme.c5 }}
+                                >
+                                    Delete Dish
+                                </SansSerifText>
                             </Pressable>
-                        )}
-                        <SansSerifText
-                            size="h3"
-                            style={[spacing.mt2, spacing.mb1]}
-                        >
-                            Cuisine
-                        </SansSerifText>
-                        <TextInput
-                            value={cuisine}
-                            autoCapitalize="words"
-                            autoCorrect={false}
-                            onChangeText={(text: string) => setCuisine(text)}
-                        />
-                        <View
-                            style={[
-                                styles.ratingContainer,
-                                spacing.mt4,
-                                { backgroundColor: theme.c2 },
-                            ]}
-                        >
-                            <SansSerifText size="h3">Rating</SansSerifText>
-                            <StarRating
-                                rating={rating}
-                                onChange={setRating}
-                                color={theme.c6}
-                            />
-                        </View>
-                        <View
-                            style={[
-                                styles.ratingContainer,
-                                spacing.mt4,
-                                { backgroundColor: theme.c2 },
-                            ]}
-                        >
-                            <SansSerifText size="h3">
-                                Time to Make
-                            </SansSerifText>
-                            <StarRating
-                                rating={timeToMake}
-                                onChange={setTimeToMake}
-                                enableHalfStar={false}
-                                color={theme.c4}
-                                emptyColor={theme.c3}
-                                StarIconComponent={({ color }) => (
-                                    <FontAwesome6
-                                        name="clock"
-                                        size={28}
-                                        color={color}
-                                    />
-                                )}
-                                style={styles.starRatingStyle}
-                                starStyle={styles.starStyle}
-                            />
-                        </View>
-                        <Pressable
-                            onPress={deleteDish}
-                            style={[spacing.mt4, spacing.mb4]}
-                        >
-                            <SansSerifText
-                                size="h3"
-                                style={{ color: theme.c5 }}
-                            >
-                                Delete Dish
-                            </SansSerifText>
-                        </Pressable>
-                    </>
-                )}
-            </ScrollView>
+                        </>
+                    )}
+                </ScrollView>
+            </KeyboardAvoidingView>
         </SafeAreaView>
     );
 }

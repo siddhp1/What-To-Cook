@@ -2,7 +2,13 @@ import { useState } from "react";
 import { router } from "expo-router";
 
 // Components and styles
-import { Alert, Dimensions, StyleSheet } from "react-native";
+import {
+    Alert,
+    Dimensions,
+    KeyboardAvoidingView,
+    Platform,
+    StyleSheet,
+} from "react-native";
 import StarRating from "react-native-star-rating-widget";
 import {
     Pressable,
@@ -70,80 +76,84 @@ export default function AddScreen() {
 
     return (
         <SafeAreaView>
-            <ScrollView>
-                <TextInput
-                    placeholder="Name of Dish"
-                    autoCapitalize="words"
-                    autoCorrect={false}
-                    onChangeText={(text: string) => setName(text)}
-                    style={spacing.mt4}
-                />
-                {image && (
-                    <Image
-                        style={[styles.image, spacing.mt4]}
-                        source={{ uri: image }}
+            <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+            >
+                <ScrollView>
+                    <TextInput
+                        placeholder="Name of Dish"
+                        autoCapitalize="words"
+                        autoCorrect={false}
+                        onChangeText={(text: string) => setName(text)}
+                        style={spacing.mt4}
                     />
-                )}
-                <Pressable onPress={imagePickerHandler} style={spacing.mt4}>
-                    <SansSerifText size="h3" style={{ color: theme.c5 }}>
-                        {image ? "Change Image" : "Add Image"}
-                    </SansSerifText>
-                </Pressable>
-                <TextInput
-                    placeholder="Cuisine"
-                    autoCapitalize="words"
-                    autoCorrect={false}
-                    onChangeText={(text: string) => setCuisine(text)}
-                    style={spacing.mt4}
-                />
-                <View
-                    style={[
-                        styles.ratingContainer,
-                        spacing.mt4,
-                        { backgroundColor: theme.c2 },
-                    ]}
-                >
-                    <SansSerifText size="h3">Rating</SansSerifText>
-                    <StarRating
-                        rating={rating}
-                        onChange={setRating}
-                        color={theme.c6}
+                    {image && (
+                        <Image
+                            style={[styles.image, spacing.mt4]}
+                            source={{ uri: image }}
+                        />
+                    )}
+                    <Pressable onPress={imagePickerHandler} style={spacing.mt4}>
+                        <SansSerifText size="h3" style={{ color: theme.c5 }}>
+                            {image ? "Change Image" : "Add Image"}
+                        </SansSerifText>
+                    </Pressable>
+                    <TextInput
+                        placeholder="Cuisine"
+                        autoCapitalize="words"
+                        autoCorrect={false}
+                        onChangeText={(text: string) => setCuisine(text)}
+                        style={spacing.mt4}
                     />
-                </View>
-                <View
-                    style={[
-                        styles.ratingContainer,
-                        spacing.mt4,
-                        { backgroundColor: theme.c2 },
-                    ]}
-                >
-                    <SansSerifText size="h3">Time to Cook</SansSerifText>
-                    <StarRating
-                        rating={timeToMake}
-                        onChange={setTimeToMake}
-                        enableHalfStar={false}
-                        color={theme.c4}
-                        emptyColor={theme.c3}
-                        StarIconComponent={({ color }) => (
-                            <FontAwesome6
-                                name="clock"
-                                size={28}
-                                color={color}
-                            />
-                        )}
-                        style={{ marginTop: 5, marginBottom: 2 }}
-                        starStyle={{ marginHorizontal: 7 }}
-                    />
-                </View>
-                <Pressable
-                    onPress={createDish}
-                    style={[spacing.mt4, spacing.mb4]}
-                >
-                    <SansSerifText size="h2" style={{ color: theme.c5 }}>
-                        Add Dish
-                    </SansSerifText>
-                </Pressable>
-            </ScrollView>
+                    <View
+                        style={[
+                            styles.ratingContainer,
+                            spacing.mt4,
+                            { backgroundColor: theme.c2 },
+                        ]}
+                    >
+                        <SansSerifText size="h3">Rating</SansSerifText>
+                        <StarRating
+                            rating={rating}
+                            onChange={setRating}
+                            color={theme.c6}
+                        />
+                    </View>
+                    <View
+                        style={[
+                            styles.ratingContainer,
+                            spacing.mt4,
+                            { backgroundColor: theme.c2 },
+                        ]}
+                    >
+                        <SansSerifText size="h3">Time to Cook</SansSerifText>
+                        <StarRating
+                            rating={timeToMake}
+                            onChange={setTimeToMake}
+                            enableHalfStar={false}
+                            color={theme.c4}
+                            emptyColor={theme.c3}
+                            StarIconComponent={({ color }) => (
+                                <FontAwesome6
+                                    name="clock"
+                                    size={28}
+                                    color={color}
+                                />
+                            )}
+                            style={{ marginTop: 5, marginBottom: 2 }}
+                            starStyle={{ marginHorizontal: 7 }}
+                        />
+                    </View>
+                    <Pressable
+                        onPress={createDish}
+                        style={[spacing.mt4, spacing.mb4]}
+                    >
+                        <SansSerifText size="h2" style={{ color: theme.c5 }}>
+                            Add Dish
+                        </SansSerifText>
+                    </Pressable>
+                </ScrollView>
+            </KeyboardAvoidingView>
         </SafeAreaView>
     );
 }
