@@ -61,7 +61,7 @@ export default function AppLayout() {
                 }}
             />
             <Tabs.Screen
-                name="settings"
+                name="(settings)"
                 options={{
                     title: "Settings",
                     headerShown: false,
