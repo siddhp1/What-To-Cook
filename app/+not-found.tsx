@@ -8,23 +8,20 @@ import { spacing } from "@/constants/Spacing";
 import { useTheme } from "@/contexts/ThemeContext";
 
 export default function NotFoundScreen() {
-    const { theme } = useTheme();
+  const { theme } = useTheme();
 
-    return (
-        <SafeAreaView
-            style={{
-                justifyContent: "center",
-            }}
-        >
-            <SansSerifText size="h1">Something went wrong.</SansSerifText>
-            <Pressable
-                style={spacing.mt4}
-                onPress={() => router.replace("(home)")}
-            >
-                <SansSerifText size="h2" style={{ color: theme.c5 }}>
-                    Return to Home
-                </SansSerifText>
-            </Pressable>
-        </SafeAreaView>
-    );
+  return (
+    <SafeAreaView
+      style={{
+        justifyContent: "center",
+      }}
+    >
+      <SansSerifText size="h1">Something went wrong.</SansSerifText>
+      <Pressable style={spacing.mt4} onPress={() => router.replace("(home)")}>
+        <SansSerifText size="h2" style={{ color: theme.c5 }}>
+          Return to Home
+        </SansSerifText>
+      </Pressable>
+    </SafeAreaView>
+  );
 }
