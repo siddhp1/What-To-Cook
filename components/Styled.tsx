@@ -8,13 +8,15 @@ import {
   PressableStateCallbackType,
   TextInput as DefaultTextInput,
   TextInputProps as DefaultTextInputProps,
-  SafeAreaView as DefaultSafeAreaView,
   ScrollView as DefaultScrollView,
   View as DefaultView,
   StyleProp,
   ViewStyle,
   TextStyle,
 } from "react-native";
+import {
+  SafeAreaView as DefaultSafeAreaView
+} from "react-native-safe-area-context";
 import {
   Image as DefaultImage,
   ImageProps as DefaultImageProps,
@@ -45,8 +47,8 @@ const sansSerifTextStyles = {
 };
 
 const serifTextStyles = {
-  h1: { fontSize: 40, fontFamily: "Adelia", lineHeight: "100%" },
-  h2: { fontSize: 36, fontFamily: "Adelia", lineHeight: "100%" },
+  h1: { fontSize: 40, fontFamily: "Adelia", lineHeight: 96 },
+  h2: { fontSize: 36, fontFamily: "Adelia", lineHeight: 72 },
   h3: { fontSize: 20, fontFamily: "Adelia", lineHeight: 40 },
 };
 
@@ -176,7 +178,7 @@ export function SafeAreaView(props: ViewProps) {
   return (
     <DefaultSafeAreaView
       style={[
-        { flex: 1, alignItems: "center", backgroundColor: theme.c1 },
+        { flex: 1, alignItems: "center", backgroundColor: theme.c1, paddingTop: 10 },
         style,
       ]}
       {...otherProps}

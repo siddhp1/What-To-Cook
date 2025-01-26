@@ -65,7 +65,7 @@ export default function RegisterScreen() {
     }
 
     // Password meets strength requirements
-    if (zxcvbn(password).score < 3) {
+    if (zxcvbn(password).score < 2) {
       Alert.alert("Error", "Password is not strong enough.");
       return;
     }

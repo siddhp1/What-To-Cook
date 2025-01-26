@@ -39,7 +39,7 @@ const USER_LAST_NAME_KEY = "user-last-name";
 const USER_EMAIL_KEY = "user-email";
 const ACCESS_TOKEN_KEY = "access-jwt";
 const REFRESH_TOKEN_KEY = "refresh-jwt";
-export const API_URL = process.env.EXPO_PUBLIC_API_URL;
+export const API_URL = process.env["EXPO_PUBLIC_API_URL"];
 const AuthContext = createContext<AuthProps>({});
 
 export const AuthProvider = ({ children }: any) => {

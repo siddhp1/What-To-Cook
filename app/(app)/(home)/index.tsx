@@ -55,9 +55,15 @@ export default function HomeScreen() {
   const getRecommendations = async () => {
     try {
       const dishes = await onGetRecommendations!();
-      setFavoriteDishes(dishes.data.favoriteDishes);
-      setQuickDishes(dishes.data.quickDishes);
-      setOldestDishes(dishes.data.oldestDishes);
+      if (dishes && dishes.data) {
+        setFavoriteDishes(dishes.data.favoriteDishes || []);
+        setQuickDishes(dishes.data.quickDishes || []);
+        setOldestDishes(dishes.data.oldestDishes || []);
+      } else {
+        setFavoriteDishes([]);
+        setQuickDishes([]);
+        setOldestDishes([]);
+      }
     } catch (e) {
       Alert.alert("Error", "An unexpected error occurred. Please try again.");
     }
