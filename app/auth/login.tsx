@@ -83,7 +83,7 @@ export default function LoginScreen() {
         </Pressable>
         <View style={[styles.registerLinkContainer, spacing.mt4, spacing.mb4]}>
           <SansSerifText size="h3">Don't have an account?</SansSerifText>
-          <Link replace href="/register">
+          <Link replace href="/auth/register">
             <SansSerifText size="h2" style={{ color: theme.c5 }}>
               Sign Up
             </SansSerifText>

@@ -17,7 +17,7 @@ export default function AppLayout() {
 
   // Redirect to the welcome screen if not authenticated
   if (!authState?.authenticated) {
-    return <Redirect href="/" />;
+    return <Redirect href="/auth/login" />;
   }
 
   return (

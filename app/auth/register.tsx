@@ -166,7 +166,7 @@ export default function RegisterScreen() {
 
         <View style={[styles.loginLinkContainer, spacing.mt4, spacing.mb4]}>
           <SansSerifText size="h3">Have an account?</SansSerifText>
-          <Link replace href="/">
+          <Link replace href="/auth/login">
             <SansSerifText size="h2" style={{ color: theme.c5 }}>
               Login
             </SansSerifText>
