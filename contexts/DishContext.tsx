@@ -34,7 +34,7 @@ interface DishProps {
 const DISHES_KEY = "@dishes";
 import { API_URL } from "./AuthContext";
 
-const RECOMMENDATIONS_CACHE_KEY = 'recommendations_cache';
+const RECOMMENDATIONS_CACHE_KEY = "recommendations_cache";
 const CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
 const DishContext = createContext<DishProps>({});
@@ -52,11 +52,11 @@ export const DishProvider = ({ children }: { children: ReactNode }) => {
     formData.append("cuisine", dish.cuisine!);
     formData.append(
       "rating",
-      (dish.rating! < 1 ? 2 : dish.rating! * 2).toString()
+      (dish.rating! < 1 ? 2 : dish.rating! * 2).toString(),
     );
     formData.append(
       "time_to_make",
-      (dish.time_to_make! < 1 ? 1 : dish.time_to_make!).toString()
+      (dish.time_to_make! < 1 ? 1 : dish.time_to_make!).toString(),
     );
     formData.append("date_last_made", new Date().toJSON().slice(0, 10));
 
@@ -72,7 +72,7 @@ export const DishProvider = ({ children }: { children: ReactNode }) => {
     try {
       const result = await axios.post(
         `${API_URL}/api/dishes/dishes/`,
-        formData
+        formData,
       );
       const { id, name, cuisine, rating, time_to_make, date_last_made, image } =
         result.data;
@@ -134,14 +134,14 @@ export const DishProvider = ({ children }: { children: ReactNode }) => {
         filteredDishes = filteredDishes.filter(
           (dish) =>
             dish.name.toLowerCase().includes(lowerCaseSearchTerm) ||
-            dish.cuisine.toLowerCase().includes(lowerCaseSearchTerm)
+            dish.cuisine.toLowerCase().includes(lowerCaseSearchTerm),
         );
       }
 
       // Determine the ordering based on sortOrder
       const getOrderingFunction = (
         key: string,
-        isDescending: boolean = false
+        isDescending: boolean = false,
       ) => {
         return (a: any, b: any) => {
           if (a[key] < b[key]) return isDescending ? 1 : -1;
@@ -228,7 +228,7 @@ export const DishProvider = ({ children }: { children: ReactNode }) => {
     try {
       const result = await axios.patch(
         `${API_URL}/api/dishes/dishes/${dish.id}/`,
-        formData
+        formData,
       );
 
       // Get updated dish from server response
@@ -240,7 +240,7 @@ export const DishProvider = ({ children }: { children: ReactNode }) => {
         ? JSON.parse(storedDishesJson)
         : [];
       const updatedDishes = storedDishes.map((d) =>
-        d.id === updatedDish.id ? updatedDish : d
+        d.id === updatedDish.id ? updatedDish : d,
       );
       await AsyncStorage.setItem(DISHES_KEY, JSON.stringify(updatedDishes));
       return {
@@ -326,24 +326,24 @@ export const DishProvider = ({ children }: { children: ReactNode }) => {
           return data;
         }
       }
-  
+
       // Fetch fresh recommendations from API
       const result = await axios.get(`${API_URL}/api/dishes/recommendations/`);
 
       const favoriteIds = result.data.favorite_dishes.map(
-        (dish: { id: number }) => dish.id
+        (dish: { id: number }) => dish.id,
       );
       const oldestIds = result.data.oldest_dishes.map(
-        (dish: { id: number }) => dish.id
+        (dish: { id: number }) => dish.id,
       );
       const quickIds = result.data.quick_dishes.map(
-        (dish: { id: number }) => dish.id
+        (dish: { id: number }) => dish.id,
       );
       const recipes = result.data.recipe_recommendations;
       const favoriteDishes = await getDishesByIds(favoriteIds);
       const oldestDishes = await getDishesByIds(oldestIds);
       const quickDishes = await getDishesByIds(quickIds);
-  
+
       const dataToCache = {
         status: result.status,
         data: {
@@ -353,16 +353,16 @@ export const DishProvider = ({ children }: { children: ReactNode }) => {
           recipes,
         },
       };
-  
+
       // Save the recommendations to cache with a timestamp
       await AsyncStorage.setItem(
         RECOMMENDATIONS_CACHE_KEY,
         JSON.stringify({
           timestamp: Date.now(),
           data: dataToCache,
-        })
+        }),
       );
-  
+
       return dataToCache;
     } catch (e: any) {
       if (axios.isAxiosError(e) && e.response) {
@@ -401,12 +401,12 @@ export const DishProvider = ({ children }: { children: ReactNode }) => {
 
       // Find dishes that are in the server but not in local storage
       const dishesToAdd = serverDishes.filter(
-        (dish) => !localDishIds.includes(dish.id)
+        (dish) => !localDishIds.includes(dish.id),
       );
 
       // Find dishes that are in local storage but not in the server
       const dishesToRemove = localDishes.filter(
-        (dish) => !serverDishIds.includes(dish.id)
+        (dish) => !serverDishIds.includes(dish.id),
       );
 
       // Find dishes that are in both but need updating
@@ -421,18 +421,18 @@ export const DishProvider = ({ children }: { children: ReactNode }) => {
         const updatedLocalDishes = [...localDishes, ...dishesToAdd];
         await AsyncStorage.setItem(
           DISHES_KEY,
-          JSON.stringify(updatedLocalDishes)
+          JSON.stringify(updatedLocalDishes),
         );
       }
 
       // Remove dishes
       if (dishesToRemove.length > 0) {
         const updatedLocalDishes = localDishes.filter(
-          (dish) => !dishesToRemove.some((d) => d.id === dish.id)
+          (dish) => !dishesToRemove.some((d) => d.id === dish.id),
         );
         await AsyncStorage.setItem(
           DISHES_KEY,
-          JSON.stringify(updatedLocalDishes)
+          JSON.stringify(updatedLocalDishes),
         );
       }
 
@@ -444,7 +444,7 @@ export const DishProvider = ({ children }: { children: ReactNode }) => {
         });
         await AsyncStorage.setItem(
           DISHES_KEY,
-          JSON.stringify(updatedLocalDishes)
+          JSON.stringify(updatedLocalDishes),
         );
       }
 

@@ -14,9 +14,7 @@ import {
   ViewStyle,
   TextStyle,
 } from "react-native";
-import {
-  SafeAreaView as DefaultSafeAreaView
-} from "react-native-safe-area-context";
+import { SafeAreaView as DefaultSafeAreaView } from "react-native-safe-area-context";
 import {
   Image as DefaultImage,
   ImageProps as DefaultImageProps,
@@ -178,7 +176,12 @@ export function SafeAreaView(props: ViewProps) {
   return (
     <DefaultSafeAreaView
       style={[
-        { flex: 1, alignItems: "center", backgroundColor: theme.c1, paddingTop: 10 },
+        {
+          flex: 1,
+          alignItems: "center",
+          backgroundColor: theme.c1,
+          paddingTop: 10,
+        },
         style,
       ]}
       {...otherProps}

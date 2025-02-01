@@ -50,7 +50,7 @@ export default function SearchScreen() {
   useFocusEffect(
     useCallback(() => {
       refreshPage();
-    }, [refreshPage])
+    }, [refreshPage]),
   );
 
   // Refresh dishes if search query or sort order changes
@@ -95,7 +95,7 @@ export default function SearchScreen() {
           style: "cancel",
         },
       ],
-      { cancelable: true }
+      { cancelable: true },
     );
   };
 

@@ -41,7 +41,7 @@ export default function LoginScreen() {
       if (result.error) {
         Alert.alert(
           `Error (${result.status})`,
-          result.detail || "Login failed."
+          result.detail || "Login failed.",
         );
       } else {
         router.replace("(home)");

@@ -26,11 +26,10 @@ import { Feather } from "@expo/vector-icons";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useDishes, Dish } from "@/contexts/DishContext";
 
-
 type Recipe = {
   id: number;
   name: string;
-  tags: [],
+  tags: [];
 };
 
 interface RecipeListProps {
@@ -48,7 +47,9 @@ export default function HomeScreen() {
   const [quickDishes, setQuickDishes] = useState<Dish[]>([]);
   const [favoriteDishes, setFavoriteDishes] = useState<Dish[]>([]);
   const [oldestDishes, setOldestDishes] = useState<Dish[]>([]);
-  const [recipeRecommendations, setRecipeRecommendations] = useState<Recipe[]>([]);
+  const [recipeRecommendations, setRecipeRecommendations] = useState<Recipe[]>(
+    [],
+  );
 
   const refreshPage = useCallback(() => {
     getRecommendations();
@@ -57,7 +58,7 @@ export default function HomeScreen() {
   useFocusEffect(
     useCallback(() => {
       refreshPage();
-    }, [refreshPage])
+    }, [refreshPage]),
   );
 
   const getRecommendations = async () => {
@@ -102,17 +103,21 @@ export default function HomeScreen() {
 
   const RecipeList = ({ data }: RecipeListProps) => {
     return (
-      <ScrollView style={[styles.recommendationContainer, spacing.mt2, spacing.mb2]}>
+      <ScrollView
+        style={[styles.recommendationContainer, spacing.mt2, spacing.mb2]}
+      >
         {data.map((item) => (
           <Pressable
             key={item.id}
             style={spacing.mb4}
-            onPress={() => Linking.openURL(
-              `https://www.food.com/recipe/${item.name
-                .toLowerCase()
-                .split(' ')
-                .join('-')}-${item.id}`
-            )}
+            onPress={() =>
+              Linking.openURL(
+                `https://www.food.com/recipe/${item.name
+                  .toLowerCase()
+                  .split(" ")
+                  .join("-")}-${item.id}`,
+              )
+            }
           >
             <SansSerifText size="h3">{item.name}</SansSerifText>
           </Pressable>

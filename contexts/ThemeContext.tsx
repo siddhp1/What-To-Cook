@@ -21,7 +21,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 
   // Set theme to current color scheme
   const [theme, setTheme] = useState(
-    colorScheme === "dark" ? DarkTheme : LightTheme
+    colorScheme === "dark" ? DarkTheme : LightTheme,
   );
 
   // Update theme if color scheme changes

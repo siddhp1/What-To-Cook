@@ -1,58 +1,58 @@
 {
-    "expo": {
-        "name": "WhatToCook",
-        "slug": "WhatToCook",
-        "version": "1.0.0",
-        "orientation": "portrait",
-        "icon": "./assets/images/icon.png",
-        "scheme": "myapp",
-        "userInterfaceStyle": "automatic",
-        "newArchEnabled": true,
-        "splash": {
-            "image": "./assets/images/splash.png",
-            "resizeMode": "contain",
-            "backgroundColor": "#ffffff"
-        },
-        "ios": {
-            "supportsTablet": true,
-            "config": {
-                "usesNonExemptEncryption": false
-            },
-            "infoPlist": {
-                "NSCameraUsageDescription": "This app needs access to your camera to take photos.",
-                "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to choose photos."
-            }
-        },
-        "android": {
-            "adaptiveIcon": {
-                "foregroundImage": "./assets/images/adaptive-icon.png",
-                "backgroundColor": "#ffffff"
-            },
-            "permissions": [
-                "CAMERA",
-                "READ_EXTERNAL_STORAGE",
-                "WRITE_EXTERNAL_STORAGE"
-            ]
-        },
-        "plugins": [
-            "expo-router",
-            "expo-font",
-            [
-                "expo-secure-store",
-                {
-                    "faceIDPermission": "Allow WhatToCook to access your Face ID biometric data."
-                }
-            ],
-            [
-                "expo-image-picker",
-                {
-                    "photosPermission": "Allow WhatToCook to access your photos",
-                    "cameraPermission": "Allow WhatToCook to access your camera"
-                }
-            ]
-        ],
-        "experiments": {
-            "typedRoutes": true
+  "expo": {
+    "name": "WhatToCook",
+    "slug": "WhatToCook",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "myapp",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app needs access to your camera to take photos.",
+        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to choose photos."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      [
+        "expo-secure-store",
+        {
+          "faceIDPermission": "Allow WhatToCook to access your Face ID biometric data."
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow WhatToCook to access your photos",
+          "cameraPermission": "Allow WhatToCook to access your camera"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
     }
+  }
 }

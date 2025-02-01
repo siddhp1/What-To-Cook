@@ -53,7 +53,7 @@ export default function SearchScreen() {
   useFocusEffect(
     useCallback(() => {
       refreshPage();
-    }, [refreshPage])
+    }, [refreshPage]),
   );
 
   // Refresh dishes if search query or sort order changes

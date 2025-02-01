@@ -41,7 +41,7 @@ export default function RegisterScreen() {
       if (result.error) {
         Alert.alert(
           `Error (${result.status})`,
-          result.detail || "Login failed."
+          result.detail || "Login failed.",
         );
       } else {
         router.replace("(home)");
@@ -76,7 +76,7 @@ export default function RegisterScreen() {
         firstName,
         lastName,
         password,
-        confirmPassword
+        confirmPassword,
       );
 
       if (result.error) {
@@ -99,7 +99,7 @@ export default function RegisterScreen() {
         }
         Alert.alert(
           `Error (${result.status})`,
-          alertMessage || "Sign up failed."
+          alertMessage || "Sign up failed.",
         );
       } else {
         login(); // Auto login

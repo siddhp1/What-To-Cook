@@ -24,7 +24,7 @@ interface AuthProps {
     firstName: string,
     lastName: string,
     password: string,
-    confirmPassword: string
+    confirmPassword: string,
   ) => Promise<any>;
   onLogin?: (email: string, password: string) => Promise<any>;
   onLogout?: () => Promise<any>;
@@ -81,9 +81,8 @@ export const AuthProvider = ({ children }: any) => {
 
       const newAccessToken = response.data.access;
       await SecureStore.setItemAsync(ACCESS_TOKEN_KEY, newAccessToken);
-      axios.defaults.headers.common[
-        "Authorization"
-      ] = `Bearer ${newAccessToken}`;
+      axios.defaults.headers.common["Authorization"] =
+        `Bearer ${newAccessToken}`;
 
       setAuthState((prevState) => ({
         ...prevState,
@@ -118,9 +117,8 @@ export const AuthProvider = ({ children }: any) => {
             refreshToken,
             authenticated: true,
           });
-          axios.defaults.headers.common[
-            "Authorization"
-          ] = `Bearer ${accessToken}`;
+          axios.defaults.headers.common["Authorization"] =
+            `Bearer ${accessToken}`;
         } else {
           // Try to refresh the token if access token is expired
           await getNewToken(refreshToken);
@@ -135,7 +133,7 @@ export const AuthProvider = ({ children }: any) => {
     firstName: string,
     lastName: string,
     password: string,
-    confirmPassword: string
+    confirmPassword: string,
   ) => {
     try {
       const result = await axios.post(`${API_URL}/api/users/register/`, {
@@ -176,15 +174,15 @@ export const AuthProvider = ({ children }: any) => {
       await SecureStore.setItemAsync(USER_ID_KEY, result.data.id.toString());
       await SecureStore.setItemAsync(
         USER_EMAIL_KEY,
-        result.data.email.toString()
+        result.data.email.toString(),
       );
       await SecureStore.setItemAsync(
         USER_FIRST_NAME_KEY,
-        result.data.first_name.toString()
+        result.data.first_name.toString(),
       );
       await SecureStore.setItemAsync(
         USER_LAST_NAME_KEY,
-        result.data.last_name.toString()
+        result.data.last_name.toString(),
       );
       setAuthState({
         userId: result.data.id.toString(),
@@ -195,9 +193,8 @@ export const AuthProvider = ({ children }: any) => {
         refreshToken: result.data.refresh,
         authenticated: true,
       });
-      axios.defaults.headers.common[
-        "Authorization"
-      ] = `Bearer ${result.data.access}`;
+      axios.defaults.headers.common["Authorization"] =
+        `Bearer ${result.data.access}`;
       return {
         status: result.status,
       };
@@ -221,7 +218,7 @@ export const AuthProvider = ({ children }: any) => {
   const deleteAccount = async () => {
     try {
       const result = await axios.delete(
-        `${API_URL}/api/users/user/${authState.userId}/`
+        `${API_URL}/api/users/user/${authState.userId}/`,
       );
       logout(); // Logout after deleting
       return {

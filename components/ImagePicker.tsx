@@ -57,7 +57,7 @@ const pickOrTake = async (): Promise<string | null> => {
           style: "cancel",
         },
       ],
-      { cancelable: true, onDismiss: () => resolve(null) }
+      { cancelable: true, onDismiss: () => resolve(null) },
     );
   });
 };
