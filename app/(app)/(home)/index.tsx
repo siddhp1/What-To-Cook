@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { router, useFocusEffect } from "expo-router";
+import * as Linking from "expo-linking";
 
 // Components and styles
 import {
@@ -25,6 +26,17 @@ import { Feather } from "@expo/vector-icons";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useDishes, Dish } from "@/contexts/DishContext";
 
+
+type Recipe = {
+  id: number;
+  name: string;
+  tags: [],
+};
+
+interface RecipeListProps {
+  data: Recipe[];
+}
+
 interface RecommendationListProps {
   data: Dish[];
 }
@@ -36,8 +48,8 @@ export default function HomeScreen() {
   const [quickDishes, setQuickDishes] = useState<Dish[]>([]);
   const [favoriteDishes, setFavoriteDishes] = useState<Dish[]>([]);
   const [oldestDishes, setOldestDishes] = useState<Dish[]>([]);
+  const [recipeRecommendations, setRecipeRecommendations] = useState<Recipe[]>([]);
 
-  // Refresh the page upon coming back
   const refreshPage = useCallback(() => {
     getRecommendations();
   }, []);
@@ -48,10 +60,6 @@ export default function HomeScreen() {
     }, [refreshPage])
   );
 
-  useEffect(() => {
-    getRecommendations();
-  }, []);
-
   const getRecommendations = async () => {
     try {
       const dishes = await onGetRecommendations!();
@@ -59,10 +67,12 @@ export default function HomeScreen() {
         setFavoriteDishes(dishes.data.favoriteDishes || []);
         setQuickDishes(dishes.data.quickDishes || []);
         setOldestDishes(dishes.data.oldestDishes || []);
+        setRecipeRecommendations(dishes.data.recipes || []);
       } else {
         setFavoriteDishes([]);
         setQuickDishes([]);
         setOldestDishes([]);
+        setRecipeRecommendations([]);
       }
     } catch (e) {
       Alert.alert("Error", "An unexpected error occurred. Please try again.");
@@ -87,6 +97,27 @@ export default function HomeScreen() {
         )}
         keyExtractor={(item) => item.id.toString()}
       />
+    );
+  };
+
+  const RecipeList = ({ data }: RecipeListProps) => {
+    return (
+      <ScrollView style={[styles.recommendationContainer, spacing.mt2, spacing.mb2]}>
+        {data.map((item) => (
+          <Pressable
+            key={item.id}
+            style={spacing.mb4}
+            onPress={() => Linking.openURL(
+              `https://www.food.com/recipe/${item.name
+                .toLowerCase()
+                .split(' ')
+                .join('-')}-${item.id}`
+            )}
+          >
+            <SansSerifText size="h3">{item.name}</SansSerifText>
+          </Pressable>
+        ))}
+      </ScrollView>
     );
   };
 
@@ -122,6 +153,8 @@ export default function HomeScreen() {
             <RecommendationList data={oldestDishes} />
             <SansSerifText size="h1">Your Favourites</SansSerifText>
             <RecommendationList data={favoriteDishes} />
+            <SansSerifText size="h1">Recipes You Can Make Today</SansSerifText>
+            <RecipeList data={recipeRecommendations} />
           </>
         ) : (
           <>

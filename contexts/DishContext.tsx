@@ -34,6 +34,9 @@ interface DishProps {
 const DISHES_KEY = "@dishes";
 import { API_URL } from "./AuthContext";
 
+const RECOMMENDATIONS_CACHE_KEY = 'recommendations_cache';
+const CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+
 const DishContext = createContext<DishProps>({});
 
 export const DishProvider = ({ children }: { children: ReactNode }) => {
@@ -315,7 +318,18 @@ export const DishProvider = ({ children }: { children: ReactNode }) => {
 
   const getRecommendations = async () => {
     try {
+      // Check if cached recommendations exist and are still valid
+      const cached = await AsyncStorage.getItem(RECOMMENDATIONS_CACHE_KEY);
+      if (cached) {
+        const { timestamp, data } = JSON.parse(cached);
+        if (Date.now() - timestamp < CACHE_EXPIRY) {
+          return data;
+        }
+      }
+  
+      // Fetch fresh recommendations from API
       const result = await axios.get(`${API_URL}/api/dishes/recommendations/`);
+
       const favoriteIds = result.data.favorite_dishes.map(
         (dish: { id: number }) => dish.id
       );
@@ -325,18 +339,32 @@ export const DishProvider = ({ children }: { children: ReactNode }) => {
       const quickIds = result.data.quick_dishes.map(
         (dish: { id: number }) => dish.id
       );
+      const recipes = result.data.recipe_recommendations;
       const favoriteDishes = await getDishesByIds(favoriteIds);
       const oldestDishes = await getDishesByIds(oldestIds);
       const quickDishes = await getDishesByIds(quickIds);
-      return {
+  
+      const dataToCache = {
         status: result.status,
         data: {
           favoriteDishes,
           oldestDishes,
           quickDishes,
+          recipes,
         },
       };
-    } catch (e) {
+  
+      // Save the recommendations to cache with a timestamp
+      await AsyncStorage.setItem(
+        RECOMMENDATIONS_CACHE_KEY,
+        JSON.stringify({
+          timestamp: Date.now(),
+          data: dataToCache,
+        })
+      );
+  
+      return dataToCache;
+    } catch (e: any) {
       if (axios.isAxiosError(e) && e.response) {
         return {
           error: true,
